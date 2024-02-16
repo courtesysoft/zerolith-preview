@@ -2,7 +2,7 @@
 
 ![Zerolith Logo](zerolith/zl_internal/docs/zerolith-sega-logo-preview-version.png)
 
-# Preview zerolith release for research purposes only
+# For research purposes only
 
 This release is provided to the public for research purposes, performance measurement, general feedback, security critique, and signs of interest ahead of the official release. It is not intended for a mainstream use yet.
 
