@@ -12,7 +12,7 @@ Zerolith is a PHP framework that works like a library, and it's designed for, an
 
 **First-class integration with HTMX**
 
-HTMX is a first-class citizen in ZL due to it's high compatibility with ZL's simple server rednering approach.
+HTMX is a first-class citizen in ZL due to it's high compatibility with ZL's simple server rendering approach.
 ZL adds error handling, automatic transitions, HTMX debugging, and ZLHX to make HTMX even easier to work with.
 
 **Debugger with mini-profiler**
