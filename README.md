@@ -26,7 +26,7 @@ We strongly warn against running it in a production environment, because:
 Zerolith has pretty small use right now. It currently powers about 4 applications, a collective 300k LOC.
 
 Zerolith wants to be a Laravel competitor when it grows up. It wants to help users of it create applications as fast, if not faster.
-That means being a complete development tooklit that can handle all aspects of modern application needs.
+That means being a complete development toolkit that can handle all aspects of modern application needs.
 
 We plan for the full public release version to be completed sometime by the end of 2024.
 
