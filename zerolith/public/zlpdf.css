@@ -1,0 +1,15 @@
+/* is used? if not, should be moved to zpage. */
+
+@media only print
+{
+	.noprint{display:none;}
+}
+
+@page :first {
+    margin: 10pt 0 30pt 0;
+    border-top: .25pt solid #666;
+    content: "My book";
+    font-size: 9pt;
+    color: #333;
+
+}

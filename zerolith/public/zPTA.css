@@ -1,0 +1,67 @@
+
+/* ------------- CMS aspects ------------- */
+
+.zPTA_pagination
+{
+	border-top:1px solid var(--zl_greyDark) !important;
+	border-bottom: none !important;
+	background: var(--zl_greyLight) !important;
+    box-shadow: inset 0px 2px 3px 0px var(--zl_fadeW50), inset 0px -1px 2px 0px var(--zl_fadeB17) !important;
+	color:var(--zl_blackLight) !important;
+	text-shadow:1px 1px 0px var(--zl_fadeW25) !important;
+	line-height: 1;
+	vertical-align:middle;
+}
+
+/* degraded version CSS tags */
+.zPTA_paginationT { border-spacing:0px; margin-top:-1px; box-shadow: 5px 5px 9px var(--zl_fadeB17); }
+.degrade .zPTA_pagination
+{
+	border:1px solid var(--zl_black) !important;
+	border-top:1px solid var(--zl_greyDark) !important;
+	font-size: var(--zl_font2) !important;
+	box-shadow: inset 0px 2px 4px 0px var(--zl_fadeW50), inset 0px -1px 2px 0px var(--zl_fadeB17) !important;
+	color:var(--zl_blackLight) !important;
+	padding:var(--zl_spc2) var(--zl_spc3);
+	margin-top:-1px;
+}
+
+.degrade .zPTA_pagination { font-weight:normal; }
+
+.zlt_table .zPTA_pagination a, .degrade .zPTA_pagination a
+{
+	font-weight:bold;
+	color:var(--zl_linkDark) !important;
+	text-shadow:none !important; /* counter POM */
+}
+.zlt_table .zPTA_pagination a:hover, .degrade .zPTA_pagination a:hover
+{
+	text-shadow:none !important; /* counter POM */
+	color:var(--zl_link) !important;
+}
+
+.zPTA_pagination .highlight
+{
+	color:var(--zl_linkDark) !important;
+	background-color:var(--zl_fadeW33);
+	border: 1px solid var(--zl_fadeB25);
+	padding:0px 5px;
+	display:inline-block;
+	border-radius:var(--zl_borderRadius);
+	text-shadow:none !important;
+}
+
+.zPTA_searchBox
+{
+
+}
+
+.zPTA_searchBox td { border:unset !important; background-color:var(--zl_greyLight); padding:var(--zl_spc1) var(--zl_spc3); }
+/* add a buffer at the top and bottom of the form */
+table.zPTA_searchBox > tbody > tr:nth-of-type(2) td { padding-top:var(--zl_spc3); }
+table.zPTA_searchBox > tbody > tr:last-of-type td { padding-bottom:var(--zl_spc3); }
+
+.zPTA_legend
+{
+
+}

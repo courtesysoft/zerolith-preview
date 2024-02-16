@@ -1,0 +1,1451 @@
+/* ----- Zerolith Template Basic HTML Element Styling, zlt_ namespace ------
+07/07/2023 - v1.1 - Feature complete!
+
+TODO for v1.2:
+[ ] debugger CSS -> zd.css, zpage CSS -> zpage.css
+[ ] Remove unnecessary shadows from boxes - more consistent with style
+[ ] Refactor to pre-nested properties format ( indenting for sub classes of a class )
+[ ] Remove vintage code - old modal & anything not covered by zui:: test
+
+Todo for v1.22 ( breaking change ):
+[ ] Consistent camelCase
+[ ] Descending shorthand classes w/o a zlt_ before them across the board
+[ ] re-namespace to zui_ and refactor zui:: to use it
+
+*/
+
+/* conflicting overrides */
+pre { font-size:var(--zl_fontPre); }
+
+/* Tables */
+.zlt_table h4{ margin:0px !important; color: var(--zl_blackDark); }
+.zlt_table pre
+{
+	margin:0px !important;
+	white-space: pre-wrap;
+	font-size:var(--zl_fontPre);
+	padding:2px 2px !important;
+	line-height:1.1;
+	tab-size: 4; /* emulate PHPstorm */
+}
+
+.zlt_table, .zd_codeTable
+{
+	border-spacing: 0px;
+	border: solid 1px var(--zl_black);
+	box-shadow: 5px 5px 9px var(--zl_fadeB17);
+	min-width:170px;
+	max-width:1850px;
+	margin-right:5px;
+	word-break:break-word;
+}
+
+.zl_codeTable { margin-right:0px; }
+
+.zlt_table tr:first-child th, .zlt_table tr:first-child td { border-top:unset !important; }
+
+.zlt_table td, .zlt_table th
+{
+	font-size: var(--zl_font2);
+	word-break:break-word;
+	white-space:nowrap;
+	border-left: 1px solid var(--zl_grey);
+	border-top: 1px solid var(--zl_grey);
+	padding: var(--zl_spc1) var(--zl_spc3) calc(var(--zl_spc2) - 1px)  var(--zl_spc3);
+}
+
+/* special borders for colored rows */
+.zlt_table tr.zl_bgGreenRow td, .zlt_table tr.zl_bgGreenRowAlt td
+{ border-left: 1px solid var(--greenRowBorder); border-top: 1px solid var(--greenRowBorder); }
+.zlt_table tr.zl_bgYellowRow td, .zlt_table tr.zl_bgYellowRowAlt td
+{ border-left: 1px solid var(--orangeRowBorder); border-top: 1px solid var(--orangeRowBorder); }
+.zlt_table tr.zl_bgAmberRow td, .zlt_table tr.zl_bgAmberRowAlt td
+{ border-left: 1px solid var(--orangeRowBorder); border-top: 1px solid var(--orangeRowBorder); }
+.zlt_table tr.zl_bgRedRow td, .zlt_table tr.zl_bgRedRowAlt td
+{ border-left: 1px solid var(--redRowBorder); border-top: 1px solid var(--redRowBorder); }
+.zlt_table tr.zl_bgPurpleRow td, .zlt_table tr.zl_bgPurpleRowAlt td
+{ border-left: 1px solid var(--purpleRowBorder); border-top: 1px solid var(--purpleRowBorder); }
+.zlt_table tr.zl_bgBlueRow td, .zlt_table tr.zl_bgBlueRowAlt td
+{ border-left: 1px solid var(--blueRowBorder); border-top: 1px solid var(--blueRowBorder); }
+
+
+.zlt_table th img { width:18px; height:18px; vertical-align:middle; }
+
+.zlt_table th
+{
+	background: linear-gradient(to bottom, var(--zl_th) 0%, var(--zl_thDark) 66%, var(--zl_thDarkDark) 100%);
+	border-top: none;
+	font-weight:var(--zl_fontBoldWeight);
+	color:var(--zl_white);
+	text-align: left;
+	font-family:var(--zl_fontFace);
+	border-left: 1px solid var(--zl_fadeW33);
+	text-shadow: 1px 1px 0px var(--zl_fadeB33);
+	box-shadow: inset 0px 1px 0px 0px var(--zl_fadeW50), inset 0px -1px 2px 0px var(--zl_thDarkDark);
+	line-height:1.4;
+	border-bottom: 1px solid var(--zl_black);
+}
+
+.zlt_table.error th
+{
+	background: linear-gradient(to bottom, var(--zl_errMid) 0%, var(--zl_errDark) 66%, var(--zl_errDarkDark) 100%);
+	border-top: none;
+	font-weight:var(--zl_fontBoldWeight);
+	color:var(--zl_white);
+	text-align: left;
+	font-family:var(--zl_fontFace);
+	border-left: 1px solid var(--zl_fadeW33);
+	text-shadow: 1px 1px 0px var(--zl_fadeB33);
+	box-shadow: inset 0px 1px 0px 0px var(--zl_fadeW50), inset 0px -1px 2px 0px var(--zl_errDarkDark);
+	line-height:1.4;
+	border-bottom: 1px solid var(--zl_black);
+}
+
+.zlt_table.error td { padding:var(--zl_spc4); }
+
+.zlt_table td { white-space:inherit; }
+
+.zlt_table tr:nth-child(2) td { border-top: 1px solid transparent; }
+.zlt_table td:first-child, .zlt_table th:first-child { border-left: none !important; }
+.zlt_table tr:nth-child(odd) { background-color: var(--zl_whiteDark); }
+.zlt_table tr:nth-child(even) { background-color: var(--zl_white); }
+.zlt_table th a { font-weight:var(--zl_fontBoldWeight); color: var(--zl_fadeW90) !important; }
+.zlt_table th a:hover { text-decoration:none !important; color: var(--zl_white) !important; }
+
+	/* secondary table has faded and flatter TH */
+	.zlt_table.secondary { box-shadow:unset !important; }
+	.zlt_table.secondary th { filter:saturate(0.33) brightness(1.33); box-shadow:unset !important; }
+
+/* Add 'degrade long text to ellipse' characteristic to table */
+/* Note: grid-template-columns must be 'auto' for 1 row, 'auto auto' for 2 rows etc.. */
+/* inspired by: https://adamlynch.com/flexible-data-tables-with-css-grid/ */
+
+.zlt_table.degrade tbody { display: grid; grid-template-columns: auto auto auto auto; }
+.zlt_table.degrade tr { display: contents; }
+.zlt_table.degrade th { }
+.zlt_table.degrade td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.zlt_table.degrade td, .zlt_table.degrade th /* we get strange bottom spacing in this mode. */
+{ padding: var(--zl_spc2) var(--zl_spc3); }
+
+.zlt_table.degrade .hasIcon24 { position:relative; } /* create space for icon we're about to put in. */
+.zlt_table.degrade .hasIcon48 { position:relative; }
+.zlt_table.degrade .hasIcon24 .zl_right, .zlt_table.degrade .hasIcon48 .zl_right
+{ position:absolute; right:3px; top:2px; display:inline-block; } /* the icon */
+
+
+/* have to do with display:contents for it to work.. */
+.zlt_table.degrade tr:nth-child(odd) > td { background-color: var(--zl_whiteDark); }
+.zlt_table.degrade tr:nth-child(even) > td { background-color: var(--zl_white); }
+
+
+/* generic blue link style */
+
+.zl_TFLink { font-weight:unset !important; }
+.zl_TFLink:hover { color:var(--zl_linkDark) !important; text-decoration:none !important; cursor:pointer !important; }
+.zl_TFLink .zl_right i{ opacity:0; }
+.zl_TFLink:hover .zl_right i{ opacity:1; cursor:pointer; }
+
+/* filter link */
+
+.zl_TFFLink { color:var(--zl_blackDark) !important; font-weight:unset !important; }
+.zl_TFFLink:hover { color:var(--zl_blackDark) !important; text-decoration:none !important; cursor:pointer !important; position:relative; }
+.zl_TFFLink .zl_right i
+{
+	opacity:0;
+    position: absolute;
+    right: -4px;
+	color:var(--zl_greyLight);
+	-webkit-text-stroke: 1px var(--zl_blackDark);
+}
+.zl_TFFLink:hover .zl_right i{ opacity:1; cursor:pointer; }
+
+/* Highlight the filter link TD - working only on Chrome currently */
+td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33); }
+
+/* columns - DEPRECATED */
+
+.zlt_columns { display:inline-flex; }
+.zlt_column { display:inline-table; }
+.zlt_columns .zlt_column:first-child { margin-right:var(--zl_spc5); }
+
+/* buttons */
+
+.zlt_button
+{
+	border-radius: var(--zl_radDefault) !important;
+    background: linear-gradient(var(--zl_linkMid),var(--zl_linkDark) 66%) !important;
+    border: 1px solid var(--zl_linkDarkDark) !important;
+    color: var(--zl_white) !important;
+    font-size: var(--zl_font2) !important;
+    font-weight: var(--zl_fontBoldWeight) !important;
+    text-decoration: none !important;
+    outline: 0 !important;
+    padding: var(--zl_spc2) var(--zl_spc4) var(--zl_spc3) var(--zl_spc4) !important;
+    cursor: pointer !important;
+    text-shadow: 1px 1px 0 var(--zl_fadeB50) !important;
+    box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB17) !important;
+}
+.zlt_button:hover
+{
+	border: 1px solid var(--zl_blackDark) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB25) !important;
+	background: linear-gradient(var(--zl_linkMid) 10%,var(--zl_linkDark) 90%) !important;
+}
+.zlt_button:active
+{
+	background: linear-gradient(var(--zl_link)0%,var(--zl_linkDark) 50%) !important;
+	box-shadow: inset 4px 4px 8px 0px var(--zl_fadeB33) !important;
+	color:var(--zl_fadeW50) !important;
+	text-shadow:unset !important;
+}
+
+.zlt_button:disabled, .zlt_button:disabled:hover, .zlt_button:disabled:active
+{
+	background: linear-gradient(var(--zl_greyLight),var(--zl_grey) 66%) !important;
+    border: 1px solid var(--zl_greyDark) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB17) !important;
+	color: var(--zl_white) !important;
+	text-shadow: 1px 1px 0 var(--zl_fadeB50) !important;
+	opacity:0.8;
+}
+
+.zlt_button:disabled:active { opacity: 0.7; }
+
+.zlt_button.small { padding: var(--zl_spc1) var(--zl_spc4) var(--zl_spc2) var(--zl_spc4) !important; }
+.zlt_button.small .zlt_micon { font-size: var(--zl_font4) !important; }
+
+/* ZL templated button styles */
+
+.zlt_button.ok
+{
+    background: linear-gradient(var(--zl_okMid),var(--zl_okDark) 66%) !important;
+    border: 1px solid var(--zl_okDark) !important;
+    color: var(--zl_white) !important;
+    text-shadow: 1px 1px 0 var(--zl_fadeB50) !important;
+    box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB17) !important;
+}
+.zlt_button.ok:hover
+{
+	background: linear-gradient(var(--zl_okMid) 10%,var(--zl_okDark) 90%) !important;
+	border: 1px solid var(--zl_blackDark) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB25) !important;
+}
+.zlt_button.ok:active
+{
+	background: linear-gradient(var(--zl_okMid) 0%,var(--zl_okDark) 50%) !important;
+	box-shadow: inset 4px 4px 8px 0px var(--zl_fadeB25) !important;
+	color:var(--zl_fadeW66) !important;
+}
+
+.zlt_button.warn
+{
+    background: linear-gradient(var(--zl_warnMid),var(--zl_warnDark) 66%) !important;
+    border: 1px solid var(--zl_warnDark) !important;
+    color: var(--zl_white) !important;
+    text-shadow: 1px 1px 0 var(--zl_fadeB50) !important;
+    box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB17) !important;
+}
+.zlt_button.warn:hover
+{
+	background: linear-gradient(var(--zl_warnMid) 10%,var(--zl_warnDark) 90%) !important;
+	border: 1px solid var(--zl_blackDark) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB25) !important;
+}
+.zlt_button.warn:active
+{
+	background: linear-gradient(var(--zl_warnMid)0%,var(--zl_warnDark) 50%) !important;
+	box-shadow: inset 4px 4px 8px 0px var(--zl_fadeB25) !important;
+	color:var(--zl_fadeW66) !important;
+}
+
+.zlt_button.err
+{
+    background: linear-gradient(var(--zl_errMid),var(--zl_errDark) 66%) !important;
+    border: 1px solid var(--zl_errDark) !important;
+    color: var(--zl_white) !important;
+    text-shadow: 1px 1px 0 var(--zl_fadeB50) !important;
+    box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB17) !important;
+}
+.zlt_button.err:hover
+{
+	background: linear-gradient(var(--zl_errMid) 10%,var(--zl_errDark) 90%) !important;
+	border: 1px solid var(--zl_blackDark) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB25) !important;
+}
+.zlt_button.err:active
+{
+	background: linear-gradient(var(--zl_err)0%,var(--zl_errDark) 50%) !important;
+	box-shadow: inset 4px 4px 8px 0px var(--zl_fadeB33) !important;
+	color:var(--zl_fadeW66) !important;
+}
+
+.zlt_button.hollow
+{
+    background: linear-gradient(var(--zl_white),var(--zl_greyLight) 66%) !important;
+    border: 1px solid var(--zl_greyDark) !important;
+    color: var(--zl_black) !important;
+    text-shadow: none !important;
+    box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px -1px 0px 0px var(--zl_fadeB10) !important;
+	font-weight:normal !important;
+}
+.zlt_button.hollow:hover
+{
+	background: linear-gradient(var(--zl_white) 10%,var(--zl_greyLight) 90%) !important;
+	border: 1px solid var(--zl_blackLight) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW33);
+	color:var(--zl_blackLight) !important;
+}
+.zlt_button.hollow:active
+{
+	background: linear-gradient(var(--zl_whiteDark)0%,var(--zl_grey) 50%) !important;
+	box-shadow: inset 4px 4px 8px 0px var(--zl_fadeB25) !important;
+	color:var(--zl_blackDark) !important;
+}
+
+.zlt_button.hollow:disabled:active { opacity: 0.5; }
+
+/* general class for styled inputs */
+
+.zlt_i
+{
+	height: unset !important;
+	margin: 0px !important;
+	padding: 4px 7px !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+	border: 1px solid var(--zl_greyDark) !important;
+    box-shadow: 2px 2px 5px var(--zl_fadeB10) inset;
+	font-style: normal !important;
+	font-size: var(--zl_font2) !important;
+	border-radius: var(--zl_radDefault) !important;
+	background-color:var(--zl_white) !important;
+	max-width:unset !important; /* Anti-CS rule */
+	box-sizing:border-box;
+}
+
+.zlt_i:hover, .zlt_i:focus
+{
+	border: 1px solid var(--zl_black) !important;
+	box-shadow: 3px 3px 4px var(--zl_fadeB17), 2px 2px 5px var(--zl_fadeB10) inset;
+}
+
+.zlt_i:focus, .zlt_i:active
+{
+	border-color:var(--zl_blackDark) !important; box-shadow: unset !important;
+	box-shadow: 3px 3px 4px var(--zl_fadeB17), 2px 2px 5px var(--zl_fadeB17) inset;
+}
+
+.zlt_textArea, .zlt_textBox { min-width: 33px; }
+.zlt_textArea { font-size: var(--zl_font) !important; font-family:unset; }
+.zlt_selectBox { min-width:75px; max-height:29px; padding:4px !important; }
+
+/* combined attributes */
+
+.zlt_checkBox, .zlt_optionBox { display:inline-block; }
+.zlt_optionBox input[type="radio"], .zlt_checkBox input[type="checkbox"] { display:none; }
+.zlt_optionBox label, .zlt_checkBox label
+{
+	box-sizing:content-box;
+	position: relative; display: inline-block;
+	padding:3px 0px 3px 28px;
+}
+
+.zlt_checkBox input[type="checkbox"]:checked + label::after, .zlt_optionBox input[type="radio"]:checked + label::after, .zlt_checkBox input[type="checkbox"]:checked + label:hover::after, .zlt_optionBox input[type="radio"]:checked + label:hover::after
+{
+	content: ""; opacity: 0.9; box-shadow:unset;
+	color:var(--zl_linkDarkDark);
+}
+
+/* checkbox */
+
+.zlt_checkBox label::before, .zlt_checkBox label::after, .zlt_optionBox label::before, .zlt_optionBox label::after
+{ position: absolute; content: ""; display: inline-block; }
+
+.zlt_checkBox label::before, .zlt_optionBox label::before
+{
+	height: 18px !important;
+	width: 18px !important;
+	border: var(--zl_greyDark) 1px solid;
+	left: 0px;
+	top: 3px;
+	background: var(--zl_white);
+	border-radius: var(--zl_radDefault);
+	box-shadow: 2px 2px 5px var(--zl_greyLight) inset;
+}
+
+.zlt_checkBox input[type="checkbox"]:focus + label::before { border: 1px solid var(--zl_grey) !important; border: 1px solid var(--zl_linkDark); }
+
+.zlt_checkBox label:hover::before { border: var(--zl_blackDark) 1px solid; }
+
+.zlt_checkBox input[type="checkbox"] + label::after { color:var(--zl_greyLight); border-left: 2px solid; border-bottom: 2px solid; }
+
+.zlt_checkBox input[type="checkbox"] + label:hover::after { content: ""; color:var(--zl_grey); }
+
+.zlt_checkBox label::after	/* check mark inside the box */
+{
+	height: 6px !important;
+	width: 17px !important;
+	border-left: 3px solid !important;
+	border-bottom: 2px solid !important;
+	transform: rotate(311deg);
+	color:var(--zl_linkDarkDark);
+	left: 4px;
+	top: 3px;
+}
+
+.zlt_checkBox input[type="checkbox"]:checked + label::after /* white spacing around checkmark */
+{ box-shadow:0px 1px 0px var(--zl_fadeW75), inset 0px -1px 0px var(--zl_fadeW75) !important; }
+
+/* optionbox code.*/
+
+.zlt_optionBox label::before
+{
+	height: 18px !important;
+	width: 18px !important;
+	border-radius: var(--zl_radDefault);
+	left: 0px;
+	top: 3px;
+}
+
+.zlt_optionBox label:hover::before { border: var(--zl_blackDark) 1px solid !important; }
+
+
+.zlt_optionBox input[type="radio"] + label:hover::after
+{
+	content: ""; opacity: 1;
+	background: radial-gradient(circle at 5px 5px, var(--zl_white) 0%, var(--zl_whiteDark) 33%, var(--zl_grey) 90%) !important;
+}
+
+.zlt_optionBox input[type="radio"] + label::after { content: unset; border-radius: var(--zl_radDefault); }
+
+.zlt_optionBox label::after, .zlt_optionBox input[type="radio"]:checked + label::after	/* mini box in box */
+{
+	height: 18px !important;
+	width: 18px !important;
+	background: radial-gradient(circle at 0px 0px, var(--zl_linkLight) 5%, var(--zl_link) 35%, var(--zl_linkDark) 65%, var(--zl_linkDarkDark) 100%) !important;
+	left: 0px;
+	top: 3px;
+	border: 1px solid var(--zl_fadeB50);
+	border-style:inset;
+}
+
+.zlt_optionBox input[type="radio"]:checked + label:hover::after { border: 1px solid var(--zl_linkDarkDark); }
+.zlt_optionBox label:hover::after { border: 1px solid var(--zl_blackDark) !important; }
+
+/* force search box on webkit to always show */
+input[type="search" i]::-webkit-search-cancel-button { opacity:1; margin-left:3px; padding:1px; margin-top:-1px; margin-right:0px; }
+input[type="search" i]::-webkit-search-cancel-button:hover { cursor:pointer; }
+
+/* ----- Zerolith Template Element Styling------ */
+
+
+/* -- collapsible form group -- */
+
+@media only screen and (min-width: 2px) and (max-width: 833px)
+{
+	.zlt_formGroup { width:325px; }
+	.zlt_formTitle { width:120px; }
+}
+
+@media only screen and (min-width: 2px) and (max-width: 600px)
+{ .zlt_formTitle { width:auto; display:block; padding-bottom:10px; width: 115px; } }
+
+.zlt_configTitle
+{
+	width:165px;
+	margin-right: 7px;
+	display:inline-block;
+	padding:5px 0px;
+	margin-bottom:7px;
+	color:var(--zl_greyDark);
+}
+.zlt_configOption { min-width:220px; max-width:570px; display:inline-block; margin-bottom:7px; vertical-align:top; padding-top:3px; }
+
+/* misc */
+
+.zlt_RM { display:none; } /* read more */
+
+.zlt_toolTip { position: relative; display: inline-block; }
+
+.zlt_toolTip .zlt_toolTipText
+{
+	visibility: hidden;
+	min-width: 120px;
+	max-width:250px;
+	background-color: var(--zl_fadeB75);
+	color: var(--zl_white);
+	text-align: center;
+	border-radius: var(--zl_radDefault);
+	padding: 5px;
+	position: absolute;
+	z-index: 1;
+	bottom: 150%;
+	left: 50%;
+	margin-left: -60px;
+	transition-delay:0.5s;
+	font-size:14px;
+	border: 1px var(--zl_blackDark) solid;
+	text-shadow: 1px 1px 1px var(--zl_blackDark);
+}
+
+.zlt_toolTip .zlt_toolTipText::after
+{
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: var(--zl_fadeB75) transparent transparent transparent;
+}
+
+.zlt_toolTip:hover .zlt_toolTipText { visibility: visible; }
+
+.zlt_notifywarn, .zlt_notifyerr, .zlt_notifyok
+{
+	/* font-size:var(--zl_font); */
+	background-repeat:no-repeat;
+	margin: 5px 0px;
+	padding: var(--zl_spc2) var(--zl_spc4) calc(var(--zl_spc2) + 2px) var(--zl_spc2);
+	display:table;
+	max-width:750px;
+	max-height: 1000px;
+	border-radius: var(--zl_radDefault);
+	text-shadow:2px 2px 0px var(--zl_fadeW25);
+}
+
+.zlt_notifywarn
+{
+	border:1px solid var(--zl_warnDark);
+	background:linear-gradient(180deg, var(--zl_white) 0%, var(--zl_warnLight));
+	color:var(--zl_black);
+}
+
+.zlt_notifyerr
+{
+	border:1px solid var(--zl_errDark);
+	background:linear-gradient(180deg, var(--zl_white) 0%, var(--zl_errLight));
+	color:var(--zl_black);
+}
+
+.zlt_notifyok
+{
+	border:1px solid var(--zl_okDark);
+	background:linear-gradient(180deg, var(--zl_white) 0%, var(--zl_okLight));
+	color:var(--zl_black);
+}
+
+/* for version currently using TD */
+.zlt_notifywarn td, .zlt_notifyerr td, .zlt_notifyok td
+{
+	padding:0px;
+}
+
+.zlt_box
+{
+	background-color: var(--zl_whiteDark);
+	border: 1px solid var(--zl_greyDark);
+	padding: var(--zl_spc4);
+	box-sizing:border-box;
+}
+
+/* fake button with a micon. Used in debugger header. */
+.zlt_fakeButton i
+{
+	font-weight:600 !important;
+	padding: 1px;
+	border-left: 1px solid transparent;
+	border-right: 1px solid transparent;
+}
+.zlt_fakeButton i:hover
+{
+	background-color:var(--zl_fadeW10) !important;
+	border-left: 1px solid var(--zl_fadeW25);
+	border-right: 1px solid var(--zl_fadeW25);
+}
+.zlt_fakeButton:hover { cursor: pointer; }
+
+.zlt_fakeButton { font-weight:500 !important; }
+
+.zlt_colorPicker
+{
+	/* per-browser settings are rather weird */
+	padding: 0px;
+    width: 22px;
+    height: 25px;
+    background-color: unset;
+	position:relative;
+	top:2px;
+	border-radius:var(--zl_radDefault);
+}
+
+.zlt_colorPicker:hover { cursor:pointer; opacity:0.8; }
+.zlt_colorPicker:active { cursor:pointer; opacity:1; }
+
+.zlt_datePicker
+{
+
+}
+
+/* ------- Other code that ZLT interfaces with --------- */
+
+
+/* ZLT Modal */
+
+.zlt_modal_top
+{
+	background:linear-gradient(to bottom, var(--zl_link) 0%,var(--zl_linkDarkDark) 66%);
+	height:27px;
+	padding:2px;
+}
+
+.zlt_modal_top:hover { cursor: move !important; }
+
+.zlt_modal_lnk-close
+{
+	float:right;
+	font-family:Arial, Helvetica, sans-serif;
+	cursor: pointer;
+	transition: background-color .2s ease-out;
+	color: white !important;
+	z-index: 1005;
+	font-size: 24px;
+	padding-right:4px;
+	margin-top:-3px;
+	text-shadow:2px 2px 2px rgba(0,0,0,0.33);
+}
+
+.zlt_modal_lnk-close:hover, .zlt_modal_lnk-close:active, .zlt_modal_lnk-close:focus { text-shadow:unset !important; }
+
+.zlt_modalTitle { padding: 3px 0px 0px 7px; }
+
+.zlt_modal_title, .zlt_modal_desc
+{
+	color: white;
+	text-shadow: 0 0 0 #fff;
+	font-size: 16px;
+	font-weight:500;
+	margin: 0;
+	float:left;
+	height:32px;
+	z-index:1003;
+}
+
+button, [aria-role="button"] { cursor: pointer; }
+button[data-modal][aria-controls], [aria-role="button"][data-modal][aria-controls]
+{ transition: all .2s ease-out; }
+
+/* The modal section is added via JS */
+.zlt_modal
+{
+	1background:url('/zerolith/public/modalLoading.gif');
+	background-position:center;
+	background-repeat:no-repeat;
+	background-color: rgba(255,255,255,1);
+	background-size:25%;
+	margin: 0 auto;
+	position: absolute;
+	left: 20%;
+	top: 10%;
+	z-index: 1002;
+	border: 1px solid rgba(0,0,0,1);
+	1transition: opacity .25s ease-out, visibility 0s ease-out .25s, transform .25s ease-out .25s;
+	backface-visibility: hidden;
+	opacity: 0;
+	visibility: hidden;
+	transform: scale(1) translate3d(0,0,0);
+	pointer-events: none;
+	box-shadow: 10px 10px 10px rgba(0,0,0,0.25);
+}
+
+.zlt_modal[aria-hidden="false"]
+{
+	position: fixed;
+	transition-delay: 0s,0s, 0s;
+	opacity: 1;
+	visibility: visible;
+	transform: scale(1) translate3d(0,0,0);
+	pointer-events: auto;
+}
+
+[aria-hidden="false"] .zlt_modal_title
+{ transition: opacity .25s ease-out 1s; opacity: 0.5; }
+
+.zlt_modal_title, .zlt_modal_title:focus
+{ opacity: 1; transition: opacity .25s ease-out; }
+
+/* Lightbox properties */
+
+.zlt_modal_lightbox
+{
+	text-indent: -200em;
+	background-color: rgba(0, 0, 0, 0.88);
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	/* places the modal overlay between the main page (0) and the modal dialog (10) */
+	z-index: 1001;
+	cursor: pointer;
+	transition: opacity .25s ease-out, visibility 0s ease-out .25s;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.zlt_modal_lightbox-on
+{
+	transition-delay: 0s, 0s;
+	opacity: 0.66;
+	visibility: visible;
+	pointer-events: auto;
+}
+.zlt_modal_lightbox-on:hover
+{
+	/* Stolen from trickle.js to remove SVG requirement. */
+	cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAANpJREFUOBGNkz0KAjEQhYPYWXgCKws7LcXWyt7WG4i9jegBvIJ4AvEyXsRCsBDiN0sGkiE/O/A2O9n3viS7rPPeb9ETrVzPwrtHDzR1XF5I6oPWLQaeq5hDXQRw0I6xCuF5HH7Tz7oFuTkhrSyEhza8THaLoQhphpWUg/QOFyA/AFpy5nTbGrIjxvg4AiiGBzYc+rGZH9KPzFy+ZbX4bX9l+VDZr5NQMMbhbtvMxccpQ3JhpTchtXATQviItIpvW0CY7HHm8c9UDRd2chbABt3RQk2tEe8O3dDkD4JQ4iOR7BMpAAAAAElFTkSuQmCC"), pointer;
+}
+
+.zlt_modal_iframe
+{
+	transition: opacity .25s ease-out, visibility 0s ease-out .5s;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	z-index:1002;
+
+	/* set initial dimensions ( can be overridden by css resize )*/
+	height:750px;
+	width:800px;
+}
+
+.zlt_modal_iframe-on
+{
+	transition: opacity .4s ease-out, visibility 0s ease-out 0s;
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	background-color:white;
+	resize:both;
+	/* default width/height */
+}
+
+[aria-hidden="true"] .zlt_modal_iframe { display: none; }
+[aria-hidden="false"] .zlt_modal_iframe { display: block; }
+
+/* While modal is open Class added to body tag to prevent scroll. The body does not require class "-modal" */
+body.-zlt_modal-open { overflow: hidden; }
+
+/* Any tags classed with "-modal", when open, get "-modal-open" added */
+/* Both of these are equivalent, best practice to use the attribute version which enforces accessibility */
+.-modal[aria-hidden="true"] { -webkit-filter: blur(4px); filter: blur(4px); }
+.-modal.-zlt_modal-open { -webkit-filter: blur(4px); filter: blur(4px); }
+
+
+/* zl2.js modal */
+
+#zl_modal, #zl_modal_sub
+{
+	width: calc(100vw - 75px);
+	max-width:750px;
+	max-height:calc(100vh - 75px);
+	border:1px solid var(--zl_black);
+	box-shadow: 3px 3px 7px var(--zl_fadeB25);
+	padding:0px;
+	overflow:hidden;
+}
+.zl_modal_inner, .zl_modal_sub_inner
+{
+	padding: 10px 15px;
+	overflow:hidden;
+	max-height:calc(100vh - 109px);
+}
+.zl_modal_title
+{
+	background: linear-gradient(to bottom, var(--zl_link) 0%,var(--zl_linkDarkDark) 66%);
+	color:white;
+	font-family:var(--zl_fontFace);
+	padding:4px 7px;
+	padding-right:0px;
+	padding-bottom:5px;
+}
+
+#zl_modal .zlt_fakeButton i
+{
+	padding:4px;
+	padding-left:3px;
+	font-size:18px !important;
+}
+
+dialog::backdrop
+{
+	background-color:rgba(0,0,0,0.5);
+	cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAANpJREFUOBGNkz0KAjEQhYPYWXgCKws7LcXWyt7WG4i9jegBvIJ4AvEyXsRCsBDiN0sGkiE/O/A2O9n3viS7rPPeb9ETrVzPwrtHDzR1XF5I6oPWLQaeq5hDXQRw0I6xCuF5HH7Tz7oFuTkhrSyEhza8THaLoQhphpWUg/QOFyA/AFpy5nTbGrIjxvg4AiiGBzYc+rGZH9KPzFy+ZbX4bX9l+VDZr5NQMMbhbtvMxccpQ3JhpTchtXATQviItIpvW0CY7HHm8c9UDRd2chbABt3RQk2tEe8O3dDkD4JQ4iOR7BMpAAAAAElFTkSuQmCC"), pointer;
+}
+
+/* when in button */
+.zlt_button .zlt_micon, .zlt_button .zlt_miconTT, .zlt_button .zlt_miconO
+{
+	font-size: 1.5em;
+    vertical-align: middle;
+    margin: -8px 4px -5px -8px !important;
+	text-shadow: 1px 1px 0 var(--zl_fadeB50);
+	padding-left:3px;
+	padding-right:1px;
+}
+
+/* small only micon version */
+.zlt_button.smallMicon
+{
+	padding:0px !important;
+	font-size:13px !important;
+	padding: 2px 1px 2px 10px !important;
+    font-size: 13px !important;
+    margin-top: -3px !important;
+    margin-bottom: -3px !important;
+}
+
+/* notify micon */
+.zlt_notifywarn .zlt_micon, .zlt_notifywarn .zlt_miconO, .zlt_notifywarn .zlt_miconTT,
+.zlt_notifyerr .zlt_micon, .zlt_notifyerr .zlt_miconO, .zlt_notifyerr .zlt_miconTT,
+.zlt_notifyok .zlt_micon, .zlt_notifyok .zlt_miconO, .zlt_notifyok .zlt_miconTT
+{ margin-top: -4px; margin-right:2px; }
+
+/* adjust screwy micon position in tables. */
+th .zlt_micon { margin: -7px 0px -6px 0px; font-size: var(--zl_font4); }
+
+.zlt_micon, .zlt_miconTT, .zlt_miconO /* oriented around */
+{
+  font-family: 'MaterialIcons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: var(--zl_miconSize);
+  text-transform: none;
+  display: inline-block;
+  vertical-align:middle;
+  margin-top:-3px;
+}
+.zlt_miconTT { font-family: 'MaterialIconsTT' !important; }
+.zlt_miconO { font-family: 'MaterialIconsO' !important; }
+
+/* Micon in a table */
+td .zlt_micon, td .zlt_miconTT, td .zlt_miconO
+{
+	font-size: var(--zl_font5) !important;
+	margin-left: -1px; margin-right: -3px; margin-bottom:-2px;
+}
+th .zlt_micon.zl_right { margin-top:-1px; margin-right: -5px; }
+td .zl_right .zlt_micon { margin-top:-1px; margin-right: -5px; }
+
+/* button related micons */
+.zlt_button:active .zlt_micon { text-shadow:unset !important;}
+.zlt_fakeButton .zlt_micon, .zd_debugBar .zlt_micon
+{
+	font-size:var(--zl_font) !important;
+	margin-top:-2px;
+	margin-bottom:-2px;
+	vertical-align:middle;
+}
+
+/* gold and flat! */
+a:hover i.zlt_micon.warnHov, a:hover i.zlt_miconO.warnHov, a:hover i.zlt_miconTT.warnHov
+{
+	background: -webkit-linear-gradient(270deg, var(--zl_white) 0%, var(--zl_warn) 50%, var(--zl_warnDark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+	text-shadow:unset !important;
+}
+
+/* green! */
+a:hover i.zlt_micon.okHov, a:hover i.zlt_miconO.okHov, a:hover i.zlt_miconTT.okHov
+{
+	background: -webkit-linear-gradient(270deg, var(--zl_white) 0%, var(--zl_ok) 50%, var(--zl_okDark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+	text-shadow:unset !important;
+}
+
+/* red! */
+a:hover i.zlt_micon.errorHov, a:hover i.zlt_miconO.errorHov, a:hover i.zlt_miconTT.errorHov
+{
+	background: -webkit-linear-gradient(270deg, var(--zl_white) 0%, var(--zl_err) 66%, var(--zl_errDark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+	text-shadow:unset !important;
+}
+
+/* blue? */
+a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT.linkHov
+{
+	background: -webkit-linear-gradient(270deg, var(--zl_white) 0%, var(--zl_linkLight) 50%, var(--zl_linkDark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+	text-shadow:unset !important;
+}
+
+/* Tab System v1 - deprecated */
+
+.zlt_tabSet ul { margin-left:0px !important; } /* counteracts left padding imposed by general styling */
+.zlt_tabSet ul.zlt_tabs /* list of tabs */
+{
+	max-width: 900px !important;
+	height: 32px !important;
+	list-style: none !important;
+	overflow: hidden !important;
+    padding: 0 !important;
+	margin:0px;
+}
+.zlt_tabSet ul.zlt_tabs li { float: left; min-width:60px; }
+.zlt_tabSet ul.zlt_tabs li a /* each tab. */
+{
+	font-size:var(--zl_font2);
+	position: relative !important;
+	display: block !important;
+	margin-top:6px;
+	padding: 3px 10px 7px 10px !important;
+	font-weight: 600 !important;
+	text-align: center !important;
+	text-decoration: none !important;
+	color: var(--zl_white) !important;
+	text-shadow: 1px 1px 0 var(--zl_fadeB50) !important;
+	background: linear-gradient(var(--zl_link),var(--zl_link)) !important;
+	border: 1px solid var(--zl_linkDark) !important;
+	margin-left:-1px !important;
+	border-radius:var(--zl_radDefault) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW25), inset 0px -10px 10px 0px var(--zl_fadeB10) !important;
+	line-height:1.2;
+}
+
+.zlt_tabSet ul.zlt_tabs li a:hover
+{
+	color: var(--zl_white) !important;
+	margin: 4px 0 0 -2px;
+	padding-top: 4px !important;
+	padding-bottom:8px !important;
+	border: 1px solid var(--zl_linkDarkDark) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW25), inset 0px 10px 10px 0px var(--zl_fadeW10) !important;
+}
+.zlt_tabSet ul.zlt_tabs li a.active
+{
+	color: var(--zl_white) !important;
+	margin: 2px 0 0 -2px;
+	padding-top: 4px !important;
+	padding-bottom:10px !important;
+	z-index: 5 !important;
+	outline: none !important;
+	box-shadow: 5px 7px 20px -2px var(--zl_fadeB50), inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px 0px 0px 0px var(--zl_fadeB25) !important;
+	background: linear-gradient(var(--zl_link),var(--zl_linkDark) 66%) !important;
+	border: 1px solid var(--zl_black) !important;
+}
+
+.zlt_tabSet .zlt_tabs li:first-child a { margin-left:0px !important; }
+
+.zlt_tabSet .group:before, #zlt_tabSet .group:after { content: " " !important; display: table !important; }
+.zlt_tabSet .group:after { clear: both !important; }
+.zlt_tabSet .zlt_tabContent
+{
+    border: 1px solid var(--zl_black) !important;
+    padding:10px;
+    overflow:auto !important;
+	background-color:var(--zl_white);
+}
+
+.zd_debugBar .zlt_tabSet .zlt_tabContent { padding:6px; height:450px; width:750px; resize:both; min-width:500px; max-width:95vw; min-height:300px; max-height:85vh; }
+
+/* mobile; everything's smaller */
+@media only screen and (min-width: 2px) and (max-width: 600px)
+{
+ 	.zlt_tabSet ul.zlt_tabs li { width:auto !important; font-size:13px !important; min-width: 69px !important; }
+	.zlt_tabSet ul.zlt_tabs li a
+	{
+		padding-left: 7px !important;
+		padding-right:7px !important;
+	}
+}
+
+
+/* Tab System v2 - Pure CSS */
+
+.zui_tabWrap { overflow-x: hidden; } /* helps hide radio inputs */
+.zui_tabWrap [type="radio"] /* hide inputs */
+{
+	opacity:0.05;
+	width:0px;
+	height:0px;
+	position:absolute;
+}
+
+.zui_tabWrap ul.tabs
+{
+	display: flex;
+	align-items: stretch;
+	list-style: none;
+	padding: 0px;
+	margin:0px;
+}
+
+.zui_tabWrap ul.tabs li /* counteract CS */
+{
+	padding-bottom:unset !important;
+}
+
+.zui_tabWrap .tabs div span
+{
+	float:right;
+	padding:0.5rem;
+	padding-right:0.25rem;
+}
+
+.zui_tabWrap .tabs .tab:first-child label { margin-left:0px !important; }
+
+.zui_tabWrap .tab > label
+{
+	font-size:var(--zl_font2);
+	position: relative !important;
+	display: block !important;
+	margin-top:6px;
+	padding: 3px 11px 7px 11px !important;
+	font-weight: 600 !important;
+	text-align: center !important;
+	text-decoration: none !important;
+	color: var(--zl_white) !important;
+	text-shadow: 1px 1px 0 var(--zl_fadeB50) !important;
+	background: linear-gradient(var(--zl_link),var(--zl_link)) !important;
+	border: 1px solid var(--zl_linkDark) !important;
+	margin-left:-1px !important;
+	border-radius:var(--zl_radDefault) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW25), inset 0px -10px 10px 0px var(--zl_fadeB10) !important;
+	line-height:1.2;
+	cursor: pointer;
+	transition: all 0.15s;
+	white-space:nowrap;
+}
+
+.zui_tabWrap .tab:hover label
+{
+	color: var(--zl_white) !important;
+	margin: 4px 0 0 -2px;
+	padding-top: 4px !important;
+	padding-bottom:8px !important;
+	border: 1px solid var(--zl_linkDarkDark) !important;
+	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW25), inset 0px 10px 10px 0px var(--zl_fadeW10) !important;
+}
+
+/* patch to make it look better in debugbar */
+.zd_debugBar .zui_tabWrap .tab-content
+{
+	padding:4px 5px !important;
+	resize:both;
+	overflow-y:auto;
+	overflow-x:clip;
+	height:400px; width:750px; min-width:500px; max-width:95vw; min-height:300px; max-height:85vh;
+}
+
+/* As we cannot replace the numbers with variables or calls to element properties, the number of this selector parts is our tab count limit */
+.zui_tabWrap [type="radio"]:nth-of-type(1):checked ~ .tabs .tab:nth-of-type(1) label,
+.zui_tabWrap [type="radio"]:nth-of-type(2):checked ~ .tabs .tab:nth-of-type(2) label,
+.zui_tabWrap [type="radio"]:nth-of-type(3):checked ~ .tabs .tab:nth-of-type(3) label,
+.zui_tabWrap [type="radio"]:nth-of-type(4):checked ~ .tabs .tab:nth-of-type(4) label,
+.zui_tabWrap [type="radio"]:nth-of-type(5):checked ~ .tabs .tab:nth-of-type(5) label,
+.zui_tabWrap [type="radio"]:nth-of-type(6):checked ~ .tabs .tab:nth-of-type(6) label,
+.zui_tabWrap [type="radio"]:nth-of-type(7):checked ~ .tabs .tab:nth-of-type(7) label,
+.zui_tabWrap [type="radio"]:nth-of-type(8):checked ~ .tabs .tab:nth-of-type(8) label
+{
+	color: var(--zl_white) !important;
+	margin: 2px 0 0 -2px;
+	padding-top: 4px !important;
+	padding-bottom:10px !important;
+	z-index: 5 !important;
+	outline: none !important;
+	box-shadow: 5px 7px 20px -2px var(--zl_fadeB50), inset 1px 1px 0px 0px var(--zl_fadeW33), inset -1px 0px 0px 0px var(--zl_fadeB25) !important;
+	background: linear-gradient(var(--zl_link),var(--zl_linkDark) 66%) !important;
+	border: 1px solid var(--zl_black) !important;
+}
+
+.zui_tabWrap .tab-content { display: none; } /* default state of tab is to not exist */
+
+.zui_tabWrap [type="radio"]:nth-of-type(1):checked ~ .tab-content:nth-of-type(1),
+.zui_tabWrap [type="radio"]:nth-of-type(2):checked ~ .tab-content:nth-of-type(2),
+.zui_tabWrap [type="radio"]:nth-of-type(3):checked ~ .tab-content:nth-of-type(3),
+.zui_tabWrap [type="radio"]:nth-of-type(4):checked ~ .tab-content:nth-of-type(4),
+.zui_tabWrap [type="radio"]:nth-of-type(5):checked ~ .tab-content:nth-of-type(5),
+.zui_tabWrap [type="radio"]:nth-of-type(6):checked ~ .tab-content:nth-of-type(6),
+.zui_tabWrap [type="radio"]:nth-of-type(7):checked ~ .tab-content:nth-of-type(7),
+.zui_tabWrap [type="radio"]:nth-of-type(8):checked ~ .tab-content:nth-of-type(8)
+{
+	margin-top:-3px;
+	z-index: 6 !important;
+	position:relative;
+	display: block;
+	border: 1px solid var(--bw10);
+	background: var(--bw1) !important;
+	padding:var(--zl_spc4);
+}
+
+/* ------------- Page Wrapper aspects ( previously in zpage ) ------------- */
+
+.zlt_body
+{
+	background-color:var(--zl_siteBGcolor); margin: 0px; font-family:var(--zl_fontFace);
+}
+
+.zlt_body a
+{
+	color:var(--zl_linkDark);
+	font-weight:var(--zl_linkWeight);
+	text-decoration:none;
+}
+.zlt_body a:hover
+{
+	color:var(--zl_link);
+	text-decoration:underline;
+}
+
+#zlt_pageWrap
+{
+	max-width: var(--zl_siteMaxWidth);
+	min-width: 340px;
+	width: auto;
+	min-height: 100%;
+	border-left: 1px solid var(--zl_greyDark);
+	border-right: 1px solid var(--zl_greyDark);
+	background-color: var(--zl_pageBGcolor);
+	margin: 0 auto;
+	padding: 0px;
+	box-shadow: -3px 0px 35px -5px var(--zl_fadeB50);
+	min-height:100vh; /* countercorrect issue with short pages.*/
+}
+
+@media only screen and (max-width : 1000px)
+{ #zlt_pageWrap { border:none !important; box-shadow:none !important; } }
+
+/* Minimum needed to implement sidebar */
+#zlt_headerWrap
+{
+	background-image: linear-gradient(var(--zl_white) 0%, var(--zl_whiteDarkDark) 100%);
+	width: 100%;
+	/* overflow:hidden !important; */ /* disables dropdown menu */
+	font-size: var(--zl_font4);
+	color: var(--zl_blackDark);
+	vertical-align: middle;
+	position: sticky;
+	top:0px;
+	z-index:998;
+	text-align: center;
+	height:37px;
+	border-bottom: 1px solid var(--zl_grey);
+	box-shadow: 0px 5px 10px 0px var(--zl_fadeB10);
+}
+
+/* looks like header wrap but ain't. */
+#zlt_controlBar
+{
+	margin-top:-1px;
+	padding:7px 5px;
+	border: 1px solid var(--zl_black);
+	border-top: 1px solid var(--zl_grey);
+	vertical-align: middle;
+	background-image: linear-gradient(var(--zl_white) 0%, var(--zl_whiteDarkDark) 100%);
+	display:flow-root;
+	width:calc(100% - 4px);
+	box-sizing:border-box;
+	min-height:46px;
+}
+
+.zlt_siteLogo { height:22px; vertical-align:middle; padding-right:9px; margin-left:-2px; }
+
+.zlt_headerAvatar
+{
+	width:28px;
+	height:28px;
+	background-size:cover;
+	border-radius:20px;
+	border: 1px solid var(--zl_greyDark);
+	float:right;
+	margin-right: var(--zl_spc2);
+	margin-top: var(--zl_spc1);
+}
+
+#zlt_mainWrap
+{
+
+}
+
+#zlt_navHead
+{
+	padding: 6px 10px;
+	display:block;
+	width:100%;
+	background-color:var(--zl_fadeB25);
+	border-bottom: 1px solid var(--zl_fadeB33);
+	margin-bottom:5px;
+	height:24px;
+}
+
+#zlt_navHead b{ font-size: 16px; vertical-align:middle; letter-spacing:-0.5px; }
+
+.zlt_pageTitle
+{
+	text-shadow: -1px 0px 2px var(--zl_fadeW90);
+	vertical-align:middle;
+	padding: 8px;
+	display:inline-block;
+}
+
+#sideNav
+{
+	left: 0;
+	top: 0;
+	margin: 0;
+	display:table-cell;
+	vertical-align: top;
+	width: var(--zl_sideNavWidth); /* hard set to prevent visual glitch */
+	height: 100%;
+	padding-bottom: 0px;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	will-change: transform;
+	-webkit-backface-visibility: hidden;
+	      backface-visibility: hidden;
+	-webkit-transform: translateX(0);
+	      transform: translateX(0);
+	position: absolute;
+	z-index: 1000;
+	box-shadow: 4px 0px 8px var(--zl_fadeB33);
+	background:linear-gradient(180deg, rgba(45,45,45,0.95) 15%, rgba(0,0,0,0.82) 100%), url("/zerolith/public/navbg.jpg");
+	background-size:cover;
+	border: 1px solid var(--zl_blackDark);
+	color:white;
+}
+
+#sideNav .button-collapse
+{
+	float: left;
+	position: relative;
+	margin: 4px 18px 0px 10px;
+}
+
+#zlt_sideNavClose
+{
+	position:absolute; right:6px; top:5px;
+	border: none;
+	background-color:unset;
+    color: white;
+	font-weight:var(--zl_fontBoldWeight);
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+	cursor:pointer;
+}
+
+.zlt_burger { float:left; }
+
+#zlt_navMenu { padding:9px 0px 2px 0px; }
+
+#zlt_navMenu .zlt_navItem a
+{
+	margin-bottom: 2px;
+	display: block;
+	text-decoration: none;
+    text-decoration: none;
+	display: block;
+	padding: var(--zl_spc3)  var(--zl_spc4);
+	/* border-radius: var(--zl_radDefault); */
+	color:var(--zl_greyLight);
+	text-shadow: 2px 2px 0px var(--zl_fadeB50);
+}
+
+/* non-icon portion */
+#zlt_navMenu .zlt_navItem a:hover
+{
+	background-color:var(--zl_fadeW17) !important;
+	color:var(--zl_white);
+	text-shadow:unset !important;
+}
+#zlt_navMenu .zlt_navItem a.active
+{
+	background-color:var(--zl_fadeW10);
+	text-shadow: 2px 2px 0px var(--zl_fadeB25);
+}
+
+/* Header Avatar / Dropdown Button */
+
+.zlt_headerAvatar { cursor: pointer; }
+.zlt_headerAvatar:hover, .zlt_headerAvatar:focus { opacity:0.9; }
+
+/* Container needed to position the dropdown content */
+.zlt_dropDown { position: relative; display: inline-block; float:right; }
+
+.zlt_dropDown .zlt_dropDown_arrow
+{
+    width: 8px;
+    height: 8px;
+    position: absolute;
+    transform: rotate(45deg);
+    background-color: #FFF;
+    border-left: 1px solid var(--zl_greyDark);
+	border-top: 1px solid var(--zl_greyDark);
+	top:-5px;
+	right:5px;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.zlt_dropDown-content
+{
+	display: none;
+	position: absolute;
+	background-color: var(--zl_white);
+	min-width: 150px;
+	box-shadow: 4px 4px 8px 0px rgba(0,0,0,0.2);
+	border: 1px solid var(--zl_greyDark);
+	z-index: 1;
+	top:40px;
+	right:10px;
+}
+
+.zlt_dropDown-content a
+{
+	font-size:var(--zl_font) !important;
+	color: black !important;
+	padding: 5px 7.5px;
+	text-decoration: none !important;
+	display: block;
+}
+
+.zlt_dropDown-content a:hover { background-color: #eee; }
+
+/* dynamics for different sizes */
+
+@media only screen and (max-width : 600px) /* below 600px ( mobile phones ) */
+{
+	#zlt_headerWrap { font-size: 15px !important; height:unset; }
+	#zlt_navMenu { padding: 5px 0px 28px 0px !important; }
+	#sideNav { position: fixed; top: 0px; }
+	.zlt_headerAvatar { width:25px; height:25px; }
+	.zlt_pageTitle { padding:7px; }
+	#zlt_navHead > img { display:none; }
+	.zlt_burger { padding:6px !important; padding-top:7px !important;}
+	.zlt_siteLogo { height:24px; padding-top:2px; }
+
+	#zlt_mainWrap { padding: 15px 6px 4px 6px; }
+	#zlt_mainWrap { font-size:14px !important; }
+	#zlt_mainWrap small { font-size:12px !important; }
+	#zlt_mainWrap h1 { font-size: 20px; }
+	#zlt_mainWrap h2 { font-size:17px; }
+	#zlt_mainWrap h3 { font-size:15px; }
+	#zlt_mainWrap h4 { font-size:13px; }
+	.zlt_table td { font-size:14px; }
+	body, .zlt_i { letter-spacing:-0.1px }
+}
+
+@media only screen and (min-width: 600px) and (max-width: 1000px) /* middle 650px to 992px ( tablets ) */
+{
+	#zlt_navHead { padding-top:5px; }
+	#zlt_navMenu { padding: 7px 0px 28px 0px !important; }
+	#sideNav { position:fixed; top:0px; }
+	.zlt_burger { padding:5px !important; }
+	#zlt_mainWrap { padding: 15px 10px 6px 10px; }
+	#zlt_navHead > img { display:none; }
+	.zlt_burger { padding:6px !important; padding-top:7px !important;}
+	.zlt_siteLogo { height:24px; padding-top:2px; }
+	.zlt_headerAvatar { width:27px; height:27px; }
+	.zlt_pageTitle { padding:6px; }
+	#zlt_headerWrap { height:unset; }
+}
+
+@media only screen and (min-width: 1000px) /* 992px and above ( desktop ) */
+{
+	#sideNav a.button-collapse, #zlt_sideNavClose { display: none; }
+	#sideNav { position:fixed; transform: translateX(0%) !important; left:unset !important; margin-left: -1px; }
+	.zlt_burger { display:none; }
+	#zlt_mainWrap { padding: 20px 20px 20px calc(var(--zl_sideNavWidth) + 20px); }
+	#zlt_mainWrap.noNav { padding: 20px !important; }
+	.noSidebarPad { padding-left:0px !important; }
+}
+
+/* printer settings */
+@media only print
+{
+	#zlt_pageWrap { min-height:calc(100vh - 20px); }
+	#zlt_mainWrap { box-shadow:none; padding:0px; border:none; height:auto; min-height: unset; }
+	#zlt_headerWrap { background: none !important; }
+	#sideNav{ display:none; }
+	.zlt_burger { display: none; }
+	table { box-shadow:none !important; }
+	th { background-color: #FFF !important; color: #000 !important; }
+	body { box-shadow:none !important; }
+	.backButton { display:none; }
+	.noprint { display:none; }
+}
+
+
+/* ------------ debug area ------------*/
+
+.zd_debugBar
+{
+	position:fixed;
+	bottom:5px;
+	left:5px;
+	z-index:99999;
+}
+
+/* code table for debugger */
+.zd_codeTable { margin-right:0px; }
+.zd_codeTable tr:first-child th, .zd_codeTable tr:first-child td { border-top: solid 1px var(--zl_black); }
+.zd_codeTable tr:first-child { border-top: solid 1px var(--zl_black) !important; }
+
+.zd_codeTable tr:nth-child(odd) { background-color:var(--zl_whiteDark) !important; }
+.zd_codeTable td{ font-size:var(--zl_fontPre) !important; border-top: 1px solid var(--zl_fadeB10); }
+.zd_codeTable tr, .zd_codeTable td { padding:1px 3px; }
+.zd_codeTable pre { word-wrap:normal; font-size:var(--zl_fontPre); line-height: 1; }
+.zd_codeTable td:first-child, .zd_codeTable th:first-child
+{
+	width:40px;
+	background-color: var(--zl_greyLight);
+	border-top: 1px solid var(--zl_grey);
+}
+.zd_codeTable .codeError { background-color:var(--zl_warn); }
+.zd_codeTable .lineError
+{
+	background-color:#777 !important; color: white !important;
+	vertical-align:top;
+}
+
+.zd_debugBar section { line-height:1; }
+.zd_debugContent { padding:0px !important; margin:-1px; }
+.zd_debugContent .zlt_tabs { display:inline-flex; }
+
+.zd_debugStored .zlt_tabContent { width:unset !important; }
+
+.zd_debugStored .zd_debugBar
+{
+	position:unset;
+	bottom:unset;
+	left:unset;
+	width:-webkit-fill-available;
+	border:unset !important;
+	box-shadow:unset !important;
+}
+
+.zd_debugStored tr:nth-child(even) { background-color:unset !important; }
+
+.zd_debugStored .zd_debugBarHeader { display:none; }
+
+.zd_debugBar th
+{
+	background: linear-gradient(var(--indigo5),var(--indigo8) 66%) !important;
+	padding: 2px 5px;
+	padding-right:3px;
+}
+
+.zd_debugBar.zd_hxDebug th
+{
+	background: linear-gradient(var(--indigo3),var(--indigo6) 66%) !important;
+	padding: 2px 5px;
+	padding-right: 3px;
+}

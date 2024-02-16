@@ -1,0 +1,103 @@
+/* ----- Zerolith accessory CSS file for various dependencies ------ */
+
+/* HTMX */
+
+/* HTMX swoop effect; see https://htmx.org/essays/view-transitions/ for usage */
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes slide-from-right { from { transform: translateX(90px); } }
+@keyframes slide-to-left { to { transform: translateX(-90px); } }
+
+/* define animations for the old and new content */
+::view-transition-old(hx_swoop_trans)
+{ animation: 180ms cubic-bezier(0.4, 0, 1, 1) both fade-out, 600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left; }
+::view-transition-new(hx_swoop_trans)
+{ animation: 420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in, 600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right; }
+
+/* Wrap this CSS class around the thing to be swooped; also use hx-swap="innerHTML transition:true" in conjunction */
+.hx_swoop { view-transition-name: hx_swoop_trans; }
+
+
+/* to support materialize dyn menu */
+
+.hiddendiv
+{
+	display: none;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	padding-top: 1.2rem;
+	position: absolute; /* prevents text jump on Enter keypress */
+	top: 0;
+}
+
+.drag-target
+{
+	/* height: 100%; <-- this will break your shit; we don't know why it's in here. */
+	width: 10px;
+	position: relative;
+	top: 0;
+}
+
+
+/* Material icons (micon) Reference: https://fonts.google.com/icons */
+
+@font-face { font-family: 'MaterialIconsTT'; font-style: normal; font-weight: 400; src: url(/zerolith/public/3p/micon-tt.woff2) format('woff2'); }
+@font-face { font-family: 'MaterialIcons'; font-style: normal; font-weight: 400; src: url(/zerolith/public/3p/micon.woff2) format('woff2'); }
+@font-face { font-family: 'MaterialIconsO'; font-style: normal; font-weight: 400; src: url(/zerolith/public/3p/micon-o.woff2) format('woff2'); }
+
+
+/* CKEditor beautification */
+
+.ck-rounded-corners .ck.ck-editor__top .ck-sticky-panel .ck-toolbar, .ck.ck-editor__top .ck-sticky-panel .ck-toolbar.ck-rounded-corners
+{ background-color: var(--zl_whiteDark) }
+.ck-editor__editable
+{
+  min-height:20vh;
+  max-height:50vh;
+}
+
+
+/* Jodit editor beautification */
+
+.jodit-toolbar__box { background-color:#f5f5f5 !important; }
+.jodit-icon { fill: #111 !important; }
+.jodit-toolbar-button .jodit-icon { width: 15px !important; height:15px !important; }
+.jodit-popup__content { padding:8px !important; border:1px solid #999 !important; }
+.jodit-container { border-color:#aaa !important; }
+.jodit-status-bar { display:none !important; } /* don't tell jodit! */
+.jodit-ui-separator { border-right-color: #ccc !important; }
+
+
+/* Froala Modifications */
+
+#fr-logo { display:none !important; } /* No froala brag in demo mode */
+.fr-box.fr-basic .fr-element { padding: 5px 10px !important; } /* de-fluff the text entry padding */
+.fr-toolbar .fr-btn-grp { margin:0px !important; } /* de-fluff the buttons */
+.fr-toolbar .fr-command.fr-btn { margin: 0px !important; } /* more de-fluff the buttons */
+
+/* Set Froala border radiuses to theme */
+.fr-toolbar
+{
+	border-radius: var(--zl_borderRadius) var(--zl_borderRadius) 0px 0px !important;
+	border-color: var(--zl_grey) !important;
+	background-color:var(--zl_whiteDark) !important;
+}
+.fr-second-toolbar
+{
+	border-radius: 0px 0px var(--zl_borderRadius) var(--zl_borderRadius) !important;
+	border-color: var(--zl_grey) !important;
+}
+
+/* Add contrast to borders */
+.fr-box.fr-basic .fr-wrapper { border: 1px solid var(--zl_grey) !important; }
+
+/* Tighten up icon spacing */
+.fr-toolbar .fr-command.fr-btn i, .fr-toolbar .fr-command.fr-btn svg, .fr-popup .fr-command.fr-btn i, .fr-popup .fr-command.fr-btn svg, .fr-modal .fr-command.fr-btn i, .fr-modal .fr-command.fr-btn svg
+{ margin: 7px 5px; }
+
+.fr-box.fr-basic .fr-element { min-height:150px !important; max-height:60vh !important; } /* de-fluff the text entry padding */
+
+/* Remove fluffy animation */
+.fr-toolbar .fr-command.fr-btn, .fr-popup .fr-command.fr-btn, .fr-modal .fr-command.fr-btn
+{ -webkit-transition: unset !important; transition:unset !important; }
