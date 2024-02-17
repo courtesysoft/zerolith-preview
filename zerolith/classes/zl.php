@@ -74,7 +74,7 @@ class zl
 
 	public static $initMem = "";                //initial memory used - for later reference.
 	public static $alive = false;               //prevent respawn.
-	public static $debugAvailable = true;       //set to false to force debugging off even if the mode is something other than 0
+	public static $debugForceOff = false;       //set to false to force debug display off on a per-script basis even in dev mode
 	public static $isHTMXrequest = false;       //track HTMX calls incoming at boot
 	public static $zlhxLastFunc = "";           //reference for the most recent zlhx function called.
 	public static $envInsideApp = "";           //is ZL running in a compatible host application? if so, which?
@@ -223,7 +223,7 @@ class zl
 	{
 		self::quipDZL("wordpress exiting");
 		if(!$fault) { return; } //return gracefully
-		else { echo file_get_contents("/var/www/zerolith/zl_internal/cache/wpFoot.html"); exit; } //dump the footer to screen.
+		else { echo file_get_contents("/var/www/pub/zerolith/zl_internal/cache/wpFoot.html"); exit; } //dump the footer to screen.
 	}
 
 	//This mode is designed to draw a fake wordpress page ( header and footer )
@@ -232,14 +232,14 @@ class zl
 	public static function exitFauxpress($fault = false, $userMsg = "")
 	{
 		self::quipDZL("fauxpress exiting and outputting WP footer.");
-		echo file_get_contents("/var/www/zerolith/zl_internal/cache/wpFoot.html"); exit; //dump the footer to screen.
+		echo file_get_contents("/var/www/pub/zerolith/zl_internal/cache/wpFoot.html"); exit; //dump the footer to screen.
 	}
 
 	//not tested & incomplete:
 	public static function exitFauxforo($fault = false, $userMsg = "")
 	{
 		self::quipDZL("Xenforo exiting and outputting XF footer.");
-		echo file_get_contents("/var/www/zerolith/zl_internal/cache/xenFoot.html"); exit; //dump the footer to screen.
+		echo file_get_contents("/var/www/pub/zerolith/zl_internal/cache/xenFoot.html"); exit; //dump the footer to screen.
 	}
 
 	//For API mode: exit or produce a generic API error.
@@ -424,7 +424,7 @@ class zl
 			if(self::$set['debugLevel'] != 0 && self::$set['debugFlushOB']){ @ob_flush(); }
 			
 			//let debugger() make the decision to log, show, etc.
-			if(self::$debugAvailable) { self::debugger($exceptionObject, $extraTabs, $fault, $userMsg, $subType); }
+			self::debugger($exceptionObject, $extraTabs, $fault, $userMsg, $subType);
 		}
 		
 		zpage::end(); //attempt to end the page, if started.
@@ -719,7 +719,7 @@ class zl
 		    $debugHtml = zui::bufStop();
 		 
 			//ONLY print to screen if we're in dev mode!!!
-			if(zl_mode == "dev")
+			if(zl_mode == "dev" && !zl::$debugForceOff)
 			{
 				//attempt to shove the necessary ZL includes in if you haven't done zpage::start()
 				if(!zpage::$includesDisplayed && zl::$set['outFormat'] == "page" ) { zpage::includes(); }
@@ -947,10 +947,10 @@ class zl
 		$errText = htmlspecialchars($errText);
 
 		//This error code is not included in error_reporting; handover to standard PHP error handler.
-	    if (!(error_reporting() & $code)) { return false; }
-		//else { print_r(get_defined_vars()); }
+	    if (!(error_reporting() & $code)) { return false; } //no idea why this works
+		//else { print_r(get_defined_vars()); } //what happen?
 		
-		//deal with PHP's weird consts
+		//Deal with PHP's weird consts for error codes
 		if(in_array($code, [E_WARNING, E_NOTICE, E_STRICT, E_DEPRECATED, E_RECOVERABLE_ERROR]))
 		{
 			//mutate code into a real text version
@@ -959,12 +959,26 @@ class zl
 			else if($code == E_STRICT) { $code = "E_STRICT"; }
 			else if($code == E_DEPRECATED) { $code = "E_DEPRECATED"; }
 			else if($code == E_RECOVERABLE_ERROR) { $code = "E_RECOVERABLE_ERROR"; }
-
-			$ret = "<b>$code</b> $errText $file @ $line\n";
-			$retE = "\n$code $errText $file @ $line\n";
+			
+			//log it to the server log as usual. If we don't do this, they can disappear from your webserver error.log!
+			error_log("\n$code $errText $file @ $line\n");
+			
+			//produce a mini-backtrace for the debugger
+			$ret = "<span class='zl_bgOrange1 zl_block zl_marB1'><b>$code</b> $errText $file @ $line</span>";
+			$btraces = debug_backtrace(0,7);
+			$throwaway = array_shift($btraces); //the first object is the phpWarning collector call.
+			$miniTrace = "";
+			$spaces = "";
+			foreach($btraces as $btrace)
+			{
+				$formattedb = self::formatBacktrace($btrace);
+				$miniTrace .= "<span class='zl_bw11'>" . $spaces . $formattedb['callLine'] . "</span>\n" . $spaces . $formattedb['call'] . "\n\n";
+				$spaces .= "  ";
+			}
+			$miniTrace = substr($miniTrace, 0, -1);
+			$ret .= "<span class='zl_bw8'>" . zui::readMoreR($miniTrace, 9, 0,'Show Trace ') . "</span>\n\n";
 
 			self::$PHPwarnings .= $ret; //send to ZL warning log buffer
-			error_log($retE);           //send to web server log as expected
 			return true;                //tell PHP we handled it ( don't bomb on a warning! )
 		}
 		else { return false; } //returning false will tell PHP to bomb.
