@@ -87,25 +87,25 @@ class zui
 		echo $html;
 	}
 	
-	//create a 'read more'..
-	public static function readMore($text, $limit = 512, $maxLines = 7)
+	//cut the text after
+	public static function readMore($text, $charLimit = 512, $lineLimit = 7, $dotdotdot = "...")
 	{
 		$strlen = mb_strlen($text);
 		$lineCount = mb_substr_count($text, "\n");
-		if($lineCount <= $maxLines && $strlen <= $limit) { return $text; } //below our limits.
+		if($lineCount <= $lineLimit && $strlen <= $charLimit) { return $text; } //below our limits.
 		else
 		{
 			$ID = zsys::getTimeSerial();
 			self::$lastIDreadMore = $ID; //needed for quip buffer hack
 			
-			if($lineCount > $maxLines) //line by line ( for debugger etc ).
+			if($lineCount > $lineLimit) //line by line ( for debugger etc ).
 			{
 				$lineArray = explode("\n",$text);
 				
 				//compile both text strings
 				$preview = ""; $rest = "";
-				for($i = 0; $i < $maxLines; $i++) { $preview .= $lineArray[$i] . "\n"; }
-				for($i = $maxLines; $i < $lineCount; $i++) { $rest .= $lineArray[$i] . "\n"; }
+				for($i = 0; $i < $lineLimit; $i++) { $preview .= $lineArray[$i] . "\n"; }
+				for($i = $lineLimit; $i < $lineCount; $i++) { $rest .= $lineArray[$i] . "\n"; }
 			}
 			else //simple string logic
 			{
@@ -114,17 +114,16 @@ class zui
 				for($i = 0; $i < 10; $i++)
 				{
 					//make offset to adjust the break point behind the & character
-					if(substr($text, ($limit - $i), 1) == "&") { $offset = $i; break; }
+					if(substr($text, ($charLimit - $i), 1) == "&") { $offset = $i; break; }
 				}
 				
-				$preview = substr($text,0,($limit - $offset));
-				$rest = substr($text, -($strlen - $limit + $offset));
-				
-				$preview = mb_substr($text,0,($limit - $offset));
-				$rest = mb_substr($text, -($strlen - $limit + $offset));
+				//$preview = substr($text,0,($charLimit - $offset));
+				//$rest = substr($text, -($strlen - $charLimit + $offset));
+				$preview = mb_substr($text,0,($charLimit - $offset));
+				$rest = mb_substr($text, -($strlen - $charLimit + $offset));
 			}
 			
-			echo $preview . '<span ID="zl_RM_' . $ID . '_dot">...</span>' .
+			echo $preview . '<span ID="zl_RM_' . $ID . '_dot">' . $dotdotdot . '</span>' .
 			'<span id="zl_RM_' . $ID . '_more" class="zlt_RM">' . $rest . '</span><a onclick="zl.readMore(' . "'" . $ID. "'" . ')"><i class="zlt_micon err zl_hovPoint" ID="zl_RM_' . $ID . '_button">expand_circle_down</i></a>';
 		}
 	}
@@ -783,6 +782,7 @@ class zui
 	public static function buttonFormR(...$x) { self::bufStart(); self::buttonForm(...$x); return self::bufStop(); }
 	public static function buttonLinkR(...$x) { self::bufStart(); self::buttonLink(...$x); return self::bufStop(); }
 	public static function printTableR(...$x) { self::bufStart(); self::printTable(...$x); return self::bufStop(); }
+	public static function readMoreR(...$x) { self::bufStart(); self::readMore(...$x); return self::bufStop(); }
 	public static function miconR(...$x) { self::bufStart(); self::micon(...$x); return self::bufStop(); }
 	public static function tabsR(...$x) { self::bufStart(); self::tabs(...$x); return self::bufStop(); }
 	public static function tabsCSSR(...$x) { self::bufStart(); self::tabsCSS(...$x); return self::bufStop(); }
