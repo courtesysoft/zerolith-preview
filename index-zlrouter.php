@@ -1,9 +1,22 @@
 <?php
-require("zerolith/zl_init.php");  //Load framework. Creates the zl object.
-zl::setDebugLevel(3); //Set any zerolith options needed.
+/*
+This router has not been used in a production application yet and can still be considered an alpha. Don't expect it to work properly without modification.
+This router is intended to be used with Apache to provide cute URLs for scripts which weren't written with any routing in mind. You must use .htaccess-zlrouter ( rename to .htaccess ) to enable it.
+
+How it works:
+
+[webroot] = /var/www/ or whatever your base path for your project + ZL is.
+
+1) https://yoursite.com/whatever = [webroot]/whatever.php
+2) If $allowDirect = true, https://yoursite.com/whatever.php = [webroot]/whatever.php
+3) If $subFolders contains 'admin', https://yoursite.com/admin/viewStuff = [webroot]/admin/viewStuff.php
+4) Subsequent URL segments after a valid file path are key->value pairs of variable input sent to the script, IE https://yoursite.com/admin/viewStuff/ID/4224/isEnabled/Y = [webroot]/admin/viewStuff.php?ID=4224&isEnabled=Y
+*/
 
 //01-2024 - DS - Complete, has initial testing, needs battle testing.
-//todo: remove zl dependency entirely so the given file can load it's own zl_init and therefore respect automatic determination of zl_mode
+
+require("zerolith/zl_init.php");  //Load framework. Creates the zl object.
+zl::setDebugLevel(3); //Set any zerolith options needed.
 
 //settings for routing
 $allowDirect = true; //allow a direct hit to .php ( to support legacy URLs )
