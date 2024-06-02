@@ -10,7 +10,7 @@ class zPTA
 	
 	//fields that get sucked into input
 	public static $orderBy = [];
-	public static $offset = "";
+	public static $offset = '';
 	
 	//settings that get set at init time
 	public static $orderByFields = [];
@@ -19,16 +19,16 @@ class zPTA
 	public static $TDfieldClasses = [];
 	public static $degrade = false;
 	public static $degradeTHwidths = [];
-	public static $htmxTargetSelector = "";
-	public static $htmxIncludeSelector = "";
-	public static $htmxGenerateTRIDField = "";
-	public static $name = "";
-	public static $extraWrapperClasses = "";
+	public static $htmxTargetSelector = '';
+	public static $htmxIncludeSelector = '';
+	public static $htmxGenerateTRIDField = '';
+	public static $name = '';
+	public static $extraWrapperClasses = '';
 	public static $rowsPerPage = 0;
 	
 	//buffer vars between classes
-	public static $rowsTotal = "";
-	public static $injectLinkString = "";
+	public static $rowsTotal = '';
+	public static $injectLinkString = '';
 	
 	//produce a printTable Advanced line ( TR ) and return it into an array for later printing.
 	//$bgClasses can be used to set a row style.
@@ -42,33 +42,33 @@ class zPTA
 	(
 		//mandatory fields
 		$DBtable,                   //The database table we read from.
-		$name = "PTA",              //Will determine the ID of the table
+		$name = 'PTA',              //Will determine the ID of the table
 		$showFields = [],           //Show only specific fields; SQL field => english names relations
-		$orderByFields = "",        //(piped) list of database fields that show a sort ^v in the TH in each field.
+		$orderByFields = '',        //(piped) list of database fields that show a sort ^v in the TH in each field.
 		
 		//optional logic fields
 		$defaultOrderBy = [],       //Default SQL order; SQL field => ASC/DESC
-		$injectSQLwhere = "",       //Append a fixed SQL string at the end of the search.
-		$injectLinkString = "",     //Append a fixed linkString at the end of generated linkString.
+		$injectSQLwhere = '',       //Append a fixed SQL string at the end of the search.
+		$injectLinkString = '',     //Append a fixed linkString at the end of generated linkString.
 		$rowsPerPage = 0,           //If set to anything other than 0, pagination is shown.
-		$selectFields = "*",        //The fields to include during SELECT.
+		$selectFields = '*',        //The fields to include during SELECT.
 		
 		//optional visual fields
 		$THfieldClasses = [],       //SQL field => classname for given TH field.
 		$TDfieldClasses = [],       //Add a custom div to the <td> field => classname.
-		$extraWrapperClasses = "",  //overall wrapper class for the table.
+		$extraWrapperClasses = '',  //overall wrapper class for the table.
 		$degrade = false,           //enable auto ellipsing of text; different CSS layout.
-		$degradeTHwidths = "",      //SQL field => grid-template-columns parameter for given TH field in degrade mode.
-		$htmxTargetSelector = "",   //set a HTMX hx-target; if any, will add appropriate links.
-		$htmxIncludeSelector = "",  //set a HTMX hx-include; useful for grabbing form input to submit later.
-		$htmxGenerateTRIDField = "" //set a field that will be included to generate a TR ID per row
+		$degradeTHwidths = '',      //SQL field => grid-template-columns parameter for given TH field in degrade mode.
+		$htmxTargetSelector = '',   //set a HTMX hx-target; if any, will add appropriate links.
+		$htmxIncludeSelector = '',  //set a HTMX hx-include; useful for grabbing form input to submit later.
+		$htmxGenerateTRIDField = '' //set a field that will be included to generate a TR ID per row
 	)
 	{
 		//for debugging help --v
 		//zl::quipD(get_defined_vars());
 		
 		//get input from form/url, convert, and set.
-		$temp = zfilter::array("zOrd|zOff", "stringExtended");
+		$temp = zfilter::array('zOrd|zOff', 'stringExtended');
 		self::$orderBy = zarr::toArray($temp['zOrd']);
 		self::$offset = intval($temp['zOff']);
 		unset($temp);
@@ -94,16 +94,16 @@ class zPTA
 		$defaultOrderBy = zarr::toArray($defaultOrderBy);
 		
 		//start SQL command.
-		$SQL = "SELECT $selectFields FROM $DBtable WHERE 1 " . $injectSQLwhere;
+		$SQL = 'SELECT '.$selectFields.' FROM '.$DBtable.' WHERE 1 ' . $injectSQLwhere;
 		
 		//'order by' field processing.
 		if(zs::isBlank(self::$orderBy) && !zs::isBlank($defaultOrderBy)) { self::$orderBy = $defaultOrderBy; } //use default array?
 		
 		//compute order BY
-		$orderSQL = " ";
+		$orderSQL = ' ';
 		if(!zs::isBlank(self::$orderBy))
 		{
-			$orderSQL = " ORDER BY ";
+			$orderSQL = ' ORDER BY ';
 			$hasOrderBys = false;
 			
 			foreach(self::$orderBy as $key => $value)
@@ -111,29 +111,29 @@ class zPTA
 				if(zs::isBlank($key)) { continue; }
 				$value = strtoupper($value);
 				
-				if($value == "ASC" || $value == "DESC")
+				if($value == 'ASC' || $value == 'DESC')
 				{
-					if(in_array($key, self::$orderByFields)) { $orderSQL .= "`" . $key . "` " . $value . ","; }
-					else { zl::faultAbuse("Sent invalid sort field to orderBy: " . $key); } //excuse me!
+					if(in_array($key, self::$orderByFields)) { $orderSQL .= '`' . $key . '` ' . $value . ','; }
+					else { zl::faultAbuse('Sent invalid sort field to orderBy: ' . $key); } //excuse me!
 				}
-				else { zl::faultAbuse("Sent invalid sort type to orderBy: " . $value); } //how dare you!
+				else { zl::faultAbuse('Sent invalid sort type to orderBy: ' . $value); } //how dare you!
 				$hasOrderBys = true;
 			}
-			if($hasOrderBys) { $orderSQL = trim($orderSQL, ","); } else { $orderSQL = " "; } //remove hanging chad
+			if($hasOrderBys) { $orderSQL = trim($orderSQL, ','); } else { $orderSQL = ' '; } //remove hanging chad
 		}
 		
 		// you'll want to know this when developing.
-		zl::quipD("zPTA Formed SQL query: $SQL $orderSQL");
+		zl::quipD('zPTA Formed SQL query: '.$SQL.' '.$orderSQL);
 
 		//pagination control
 		if(self::$rowsPerPage != 0) //paginated mode?
 		{
 			//V---- just load one column for count function ( faster ).
-			$x = explode(",", $selectFields); $shortSelectField = trim($x[0]);
-			$SQLshort = str_replace(" " . $selectFields . " ", " " . $shortSelectField . " ", $SQL);
+			$x = explode(',', $selectFields); $shortSelectField = trim($x[0]);
+			$SQLshort = str_replace(' ' . $selectFields . ' ', ' ' . $shortSelectField . ' ', $SQL);
 			self::$rowsTotal = count(zdb::getArray($SQLshort));
 			
-			$data = zdb::getArray($SQL . $orderSQL . " LIMIT " . self::$offset . "," . $rowsPerPage);
+			$data = zdb::getArray($SQL . $orderSQL . ' LIMIT ' . self::$offset . ',' . $rowsPerPage);
 		}
 		else
 		{
@@ -143,8 +143,8 @@ class zPTA
 		}
 		
 		//sanity check because this would silently bodge HTMX rows
-		if(self::$rowsTotal != 0 && $htmxGenerateTRIDField != "" && !isset($data[0][$htmxGenerateTRIDField]))
-		{ zl::fault("zPTA htmxGenerateTRIDField didn't match a field in the DB table. Cannot produce table."); }
+		if(self::$rowsTotal != 0 && $htmxGenerateTRIDField != '' && !isset($data[0][$htmxGenerateTRIDField]))
+		{ zl::fault('zPTA htmxGenerateTRIDField didn\'t match a field in the DB table. Cannot produce table.'); }
 		
 		//start the table wrapper
 		echo '<div class="zPTA">';
@@ -154,35 +154,35 @@ class zPTA
 	}
 	
 	
-	public static function output($searchBoxStyle = "none")
+	public static function output($searchBoxStyle = 'none')
 	{
 		//no data? no show.
-		if(zs::isBlank(self::$rows)) { echo ("No " . ucfirst(self::$name) . " found.<br>"); return; }
+		if(zs::isBlank(self::$rows)) { echo ('No ' . ucfirst(self::$name) . ' found.<br>'); return; }
 		
 		//table
 		if(self::$degrade) //auto-generate grid-widths for degraded fields
 		{
-			$dWidths = "";
+			$dWidths = '';
 			foreach(self::$showFields as $k => $v)
 			{
-				if(isset(self::$degradeTHwidths[$k])){ $dWidths .= " " . self::$degradeTHwidths[$k]; }
-				else { $dWidths .= " auto"; }
+				if(isset(self::$degradeTHwidths[$k])){ $dWidths .= ' ' . self::$degradeTHwidths[$k]; }
+				else { $dWidths .= ' auto'; }
 			}
 			?><style>#<?=self::$name?>.zlt_table.degrade tbody {grid-template-columns:<?=$dWidths?> !important;}</style><?php
-			self::$extraWrapperClasses .= " degrade";
+			self::$extraWrapperClasses .= ' degrade';
 		}
 		
-		echo "\n" . '<table class="zlt_table ' . self::$extraWrapperClasses . '" id="' . self::$name . '">' . "\n";
+		echo PHP_EOL . '<table class="zlt_table ' . self::$extraWrapperClasses . '" id="' . self::$name . '">' . PHP_EOL;
         echo '<tbody class="test" hx-target="closest tr" hx-swap="outerHTML">';
 		//echo "<tbody>"; //works without?
         echo '<tr class="zl_stickyT">';
 		
 		//htmx mode?
-		if(self::$htmxTargetSelector != "")
+		if(self::$htmxTargetSelector != '')
 		{
-			$linkString = '<a href="" hx-include="' . self::$htmxIncludeSelector . '" hx-indicator="' . self::$htmxTargetSelector . '" hx-target="' . self::$htmxTargetSelector . '" hx-get="?zpta=Y' . self::$injectLinkString . "&zOff=" . self::$offset . "&zOrd=";
+			$linkString = '<a href="" hx-include="' . self::$htmxIncludeSelector . '" hx-indicator="' . self::$htmxTargetSelector . '" hx-target="' . self::$htmxTargetSelector . '" hx-get="?zpta=Y' . self::$injectLinkString . '&zOff=' . self::$offset . '&zOrd=';
 		}
-		else { $linkString = '<a href="?' . self::$injectLinkString . "&zOff=" . self::$offset . "&zOrd="; }
+		else { $linkString = '<a href="?' . self::$injectLinkString . '&zOff=' . self::$offset . '&zOrd='; }
 		
 		//th tr
 		foreach(self::$showFields as $key => $value)
@@ -192,65 +192,65 @@ class zPTA
 			{
 				if(isset(self::$orderBy[$key]))
 				{
-					if(self::$orderBy[$key] == "DESC")
-					{ $sortHead = $linkString . $key . '|ASC~">' . $value . zui::miconR("north", "", "zl_right") . '</a>'; }
-				    else if(self::$orderBy[$key] == "ASC")
-					{ $sortHead = $linkString . $key . '|DESC~">' . $value . zui::miconR("south", "", "zl_right") . '</a>'; }
+					if(self::$orderBy[$key] == 'DESC')
+					{ $sortHead = $linkString . $key . '|ASC~">' . $value . zui::miconR('north', '', 'zl_right') . '</a>'; }
+				    else if(self::$orderBy[$key] == 'ASC')
+					{ $sortHead = $linkString . $key . '|DESC~">' . $value . zui::miconR('south', '', 'zl_right') . '</a>'; }
 				    else
-					{ $sortHead = $linkString . $key . '|DESC~">' . $value . zui::miconR("swap_vert", "", "zl_right") . '</a>'; }
+					{ $sortHead = $linkString . $key . '|DESC~">' . $value . zui::miconR('swap_vert', '', 'zl_right') . '</a>'; }
 				}
-				else { $sortHead = $linkString . $key . '|DESC~">' . $value . zui::miconR("swap_vert", "", "zl_right") . '</a>'; }
+				else { $sortHead = $linkString . $key . '|DESC~">' . $value . zui::miconR('swap_vert', '', 'zl_right') . '</a>'; }
 			}
 			else { $sortHead = $value; }
 			
 			//add colWidth if exists
 			if(!zs::isBlank(self::$THfieldClasses[$key]))
-			{ $class = ' class="' . self::$THfieldClasses[$key] . '"'; } else { $class = ""; }
+			{ $class = ' class="' . self::$THfieldClasses[$key] . '"'; } else { $class = ''; }
 			
-			echo "<th" . $class . ">" . $sortHead . "</th>";
+			echo '<th' . $class . '>' . $sortHead . '</th>';
 		}
-	    echo "</tr>\n";
+	    echo '</tr>'.PHP_EOL;
 		
 		//TR TD
 		foreach(self::$rows as $TR)
 		{
 			//for TR ID functionality.
-			if(self::$htmxGenerateTRIDField != "") { $trid = ' ID = "' . $TR['rowData'][self::$htmxGenerateTRIDField] . '"'; } else { $trid = ""; }
+			if(self::$htmxGenerateTRIDField != '') { $trid = ' ID = "' . $TR['rowData'][self::$htmxGenerateTRIDField] . '"'; } else { $trid = ''; }
 		
 			//show TR based class ( if hidden key is present )
 			if(!zs::isBlank($TR['bgClasses'])) { echo '<tr class="' . $TR['bgClasses'] . '"' . $trid . '>'; }
-			else { echo "<tr" . $trid . ">"; }
+			else { echo '<tr' . $trid . '>'; }
 			
 			//print TDs.
 			foreach(self::$showFields as $key => $value)
 			{
 				//straight pipe string as HTML it if <td> typed; allows inserting things into the <td> field.
-				if(zs::contains($TR['rowData'][$key], "<td")) { echo $TR['rowData'][$key]; }
+				if(zs::contains($TR['rowData'][$key], '<td')) { echo $TR['rowData'][$key]; }
 				else //otherwise wrap in TD as normal
 				{
 					if(!zs::isBlank(self::$TDfieldClasses[$key])) //use td field classes logic
-					{ echo '<td class="' . self::$TDfieldClasses[$key] . '">' . $TR['rowData'][$key] . "</td>"; }
-					else { echo "<td>" . $TR['rowData'][$key] . "</td>"; } //no class
+					{ echo '<td class="' . self::$TDfieldClasses[$key] . '">' . $TR['rowData'][$key] . '</td>'; }
+					else { echo '<td>' . $TR['rowData'][$key] . '</td>'; } //no class
 				}
 			}
 			
-			echo "</tr>";
+			echo '</tr>';
 		}
 		
 		//print pagination row?
 		if(self::$rowsPerPage != 0)
 		{
-			if(self::$htmxTargetSelector != "")
+			if(self::$htmxTargetSelector != '')
 			{
 				$linkString = '<a href= "" hx-include="' . self::$htmxIncludeSelector . '" hx-indicator="' . self::$htmxTargetSelector . '" hx-target="' . self::$htmxTargetSelector . '" hx-get="?zpta=Y' . self::$injectLinkString . '&zOrd=' .zarr::toAPipe(self::$orderBy);
 			}
-			else { $linkString = '<a href="?'.  self::$injectLinkString . "&zOrd=" .zarr::toAPipe(self::$orderBy); }
+			else { $linkString = '<a href="?'.  self::$injectLinkString . '&zOrd=' .zarr::toAPipe(self::$orderBy); }
 			
 			echo self::paginate($linkString, self::$offset);
 		}
-		if(self::$degrade) { echo "</table>"; } //end table and put pagination on a different row.
+		if(self::$degrade) { echo '</table>'; } //end table and put pagination on a different row.
 		
-		echo "</div>"; //end wrapper
+		echo '</div>'; //end wrapper
 	}
 	
 	//todo: forward arrow is currently broken in this function.
@@ -266,7 +266,7 @@ class zPTA
         if($offset != 0)
         {
             $prevPage = $offset - self::$rowsPerPage;
-            echo $linkString . "&zOff=$prevPage" . '">◄</a>&nbsp;' . "\n";
+            echo $linkString . '&zOff='.$prevPage . '">◄</a>&nbsp;' . PHP_EOL;
         }
 
         // show links for all pages with results...
@@ -289,13 +289,13 @@ class zPTA
             }
             
             if ($i == $offset) { echo '<span class="highlight">' . $i . '</span>&nbsp; '; } // highlight current page
-            else { echo $linkString . "&zOff=$newPage" . '">' . $i . "</a>&nbsp;\n"; }
+            else { echo $linkString . '&zOff='.$newPage . '">' . $i . '</a>&nbsp;'.PHP_EOL; }
         }
 
         if(!(intval($offset / self::$rowsPerPage) == $pages - 1) && $pages != 0) //bypass 'next' link if on last page
         {
             $newPage = $offset + self::$rowsPerPage;
-            echo $linkString . "&zOff=" . ($newPage - 1). '">►</a>&nbsp;' . "\n";
+            echo $linkString . '&zOff=' . ($newPage - 1). '">►</a>&nbsp;' . PHP_EOL;
         }
 		if(self::$degrade) { ?></div><?php }
         ?>
