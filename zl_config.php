@@ -4,25 +4,15 @@ $zl_set = [];  //Piped into zl::$set after init
 $zl_page = []; //Piped into zl::$page after init
 $zl_site = []; //Piped into zl::$site after init
 
-//Automatically set the dev or prod mode based on server's linux hostname
-//Feel free to replace this with your own logic.
-//
-//define("zl_mode", "dev"); //uncomment this line to force display of debugger
-
+//Auto-detect mode (environment). Add your own rules here!
 if(!defined('zl_mode'))
 {
-	$serverHostname = strtolower(gethostname());
-	if($serverHostname != "")
-	{
-		if(substr($serverHostname,-3,3) == "dev")      { define("zl_mode", "dev"); }
-		elseif(substr($serverHostname,-5,5)== "stage") { define("zl_mode", "stage"); }
-		else                                           { define("zl_mode", "prod"); }
-	}
-	else //local development environment?
-	{
-		if( (substr($_SERVER['SERVER_ADDR'], 0,4) == "172." || substr($_SERVER['SERVER_ADDR'], 0,7) == "10.0.2.") && $_SERVER['REQUEST_SCHEME'] == "http" && isset($_SERVER['HTTP_X_FORWARDED_HOST'])) { define("zl_mode", "dev"); }
-		else { define("zl_mode", "prod"); }
-	}
+    $host = trim(gethostname());
+    if(stripos($host, 'stage') !== false)          define("zl_mode", "stage");
+    elseif(getenv('STAGE') || getenv('STAGING'))   define("zl_mode", "stage");
+    elseif(stripos($host, 'prod') !== false)       define("zl_mode", "prod");
+    elseif(getenv('PROD') || getenv('PRODUCTION')) define("zl_mode", "prod");
+    else                                           define("zl_mode", "dev"); //Default
 }
 
 //--------------------- ZL behavior and features ---------------------
@@ -90,14 +80,12 @@ $zl_site['emailOwner'] = 'joe@' . $zl_site['emailDomain'];                   //C
 $zl_site['emailSystem'] = 'will@' . $zl_site['emailDomain'];                //Email from which to send out automated email.
 $zl_site['emailSupport'] = 'support@' . $zl_site['emailDomain'];               //Email from which to send support email.
 
-if(zl_mode == 'dev') //dev mode.
+if(zl_mode == 'prod') //production mode.
 {
-	$zl_set['mailOn'] = false;
-	$zl_site['URLbase'] = 'http://localhost/'; //base http/s path.
-	$zl_site['name'] = 'Yee-Haw enterprises Dev';                  //site's name.
-	$zl_site['namePlural'] = "YHDEV's";
-	$zl_site['logo'] = '/yeehaw.png';     //site's logo image.
-	$zl_site['curlPasswords'] = ['dev.yeehaw.com' => 'user:password'];//HTTP auth passwords for cURL.
+	$zl_site['URLbase'] = 'https://yeehaw.com/';    //base http/s path.
+	$zl_site['name'] = 'Yee-Haw Enterprises';                      //site's name.
+	$zl_site['namePlural'] = "Yee Haw Enterprises";
+	$zl_site['logo'] = '/yeehaw.png';        //site's logo image.
 }
 elseif(zl_mode == 'stage') //staging mode
 {
@@ -107,12 +95,14 @@ elseif(zl_mode == 'stage') //staging mode
 	$zl_site['namePlural'] = "YHSTAGE's";
 	$zl_site['logo'] = '/yeehaw.png';      //site's logo image.
 }
-else //production mode.
+else //dev mode.
 {
-	$zl_site['URLbase'] = 'http://localhost/';    //base http/s path.
-	$zl_site['name'] = 'Yee-Haw Enterprises';                      //site's name.
-	$zl_site['namePlural'] = "Yee Haw Enterprises''";
-	$zl_site['logo'] = '/yeehaw.png';        //site's logo image.
+	$zl_set['mailOn'] = false;
+	$zl_site['URLbase'] = 'http://localhost/'; //base http/s path.
+	$zl_site['name'] = 'Yee-Haw enterprises Dev';                  //site's name.
+	$zl_site['namePlural'] = "YHDEV's";
+	$zl_site['logo'] = '/yeehaw.png';     //site's logo image.
+	$zl_site['curlPasswords'] = ['dev.yeehaw.com' => 'user:password'];//HTTP auth passwords for cURL.
 }
 
 $zl_site['domain'] = str_replace(['https://', 'http://', "/"], '', $zl_site['URLbase']); //just the domain name
