@@ -46,9 +46,9 @@ Frameworks like Laravel and Symfony spend an inordinate amount of time creating 
 Zerolith is designed around PHP's original execution and thought model instead, which is neither 'microservices' or 'a monolith'. Our best term for PHP is that it's
  'polylithic'.
 
-#2: Zerolith is designed from the start to have as close to zero as possible impact on performance. Early tests indicated it added 3% more computational load to a large vanilla PHP project, and it's been optimized since then. Considering the alternative is to use large frameworks that 5x the computational load, 
+#2: Zerolith is designed from the start to have as close to zero as possible impact on performance. Early tests indicated it added 3% more computational load to a large vanilla PHP project, and it's been optimized since then. Spring-esque frameworks can add 500% overhead.
 
-So we call it Zerolith because it has virtually zero cpu/mem impact and imposed structure relative to it's competition.
+We call it Zerolith because it has virtually zero cpu/mem impact and imposed structure relative to it's competition.
 
 # How the hell is it so fast?
 
@@ -65,9 +65,9 @@ Zerolith has small real world uses right now. It currently powers about 4 applic
 Zerolith wants to be a Laravel competitor when it grows up. It wants to help users of it create applications as fast, if not faster.
 That means being a complete development toolkit that can handle all aspects of modern application needs.
 
-We plan for the full public release version to be completed sometime by the end of 2024.
+We plan for the full public release version to be completed sometime in early 2025.
 
-At some point we want to follow up with v2.0 and include a web-browser based rapid development environment that can generate code, and anything else we discover that can help developers using Zerolith.
+We want to follow up with v2.0 and include a web-browser based rapid development environment that can generate code, and anything else we discover that can help developers using Zerolith.
 
 # Outro
 
