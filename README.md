@@ -23,7 +23,7 @@ This release is provided to the public for research purposes, performance measur
 Zerolith is currently a mostly complete substitute for mainstream PHP frameworks.
 
 - Around 5x faster than most frameworks
-- Short, consistent syntax with low cogmnitive overhead over vanilla PHP
+- Short, consistent syntax with low cognitive overhead over vanilla PHP
 - Can run standalone or be patched into existing frameworks and used for progressive enhancement
 - First class integration with HTMX
 - On-screen Debugger and mini profiler in developer mode
