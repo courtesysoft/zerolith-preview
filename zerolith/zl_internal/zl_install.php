@@ -52,7 +52,7 @@ if(!zdb::tableExists("zl_mail"))
         zui::notify("ok", "zl_mail table created.");
     }
 }
-else { zui::notify("ok", "zl_mail database table exists"); }
+else { zui::notify("warn", "zl_mail database table exists"); }
 
 if(!zdb::tableExists("zl_debug"))
 {
@@ -84,7 +84,7 @@ if(!zdb::tableExists("zl_debug"))
         zui::notify("ok", "zl_debug table created.");
     }
 }
-else { zui::notify("ok", "zl_debug database table exists"); }
+else { zui::notify("warn", "zl_debug database table exists"); }
 
 if(!zdb::tableExists("zl_imageTender"))
 {
@@ -99,18 +99,18 @@ if(!zdb::tableExists("zl_imageTender"))
         if(!zdb::writeSQL("ALTER TABLE `zl_imageTender` MODIFY `ID` mediumint UNSIGNED NOT NULL AUTO_INCREMENT;")) { zl::fault($err); }
     }
 	
-	zui::notify("warn", "zl_imageTender table created.");
+	zui::notify("ok", "zl_imageTender table created.");
 }
-else { zui::notify("ok", "zl_imageTender database table exists"); }
+else { zui::notify("warn", "zl_imageTender database table exists"); }
 
 if(!zdb::tableExists("zl_audit"))
 {
 	$SQL = "CREATE TABLE IF NOT EXISTS `zl_audit` ( `ID` int(11) NOT NULL AUTO_INCREMENT, `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `byUser` char(150) NOT NULL, `toUser` char(150) NOT NULL, `category` char(25) NOT NULL, `action` char(25) NOT NULL, `success` char(1) NOT NULL, `eventData` varchar(255) NOT NULL, PRIMARY KEY (`ID`), UNIQUE KEY `byUser` (`byUser`), UNIQUE KEY `category` (`category`), UNIQUE KEY `action` (`action`), KEY `toUser` (`toUser`), KEY `success` (`success`) ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
  
 	if(!zdb::writeSQL($SQL)) { zl::fault("failed to create zl_audit table."); }
-	else { zui::notify("warn", "zl_audit table created."); }
+	else { zui::notify("ok", "zl_audit table created."); }
 }
-else { zui::notify("ok", "zl_audit database table exists"); }
+else { zui::notify("warn", "zl_audit database table exists"); }
 
 //passed
 echo "<br>";
