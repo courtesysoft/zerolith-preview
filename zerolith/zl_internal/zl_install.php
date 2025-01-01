@@ -49,10 +49,8 @@ if(!zdb::tableExists("zl_mail"))
     {
         if(!zdb::writeSQL("ALTER TABLE `zl_mail` ADD PRIMARY KEY (`ID`), ADD KEY `status` (`status`) USING BTREE;")) { zl::fault($err); }
         if(!zdb::writeSQL("ALTER TABLE `zl_mail` MODIFY `ID` mediumint UNSIGNED NOT NULL AUTO_INCREMENT;")) { zl::fault($err); }
+        zui::notify("ok", "zl_mail table created.");
     }
-	
-	if(!zdb::writeSQL($SQL)) { zl::fault($err); }
-	else { zui::notify("ok", "zl_mail table created."); }
 }
 else { zui::notify("ok", "zl_mail database table exists"); }
 
@@ -83,10 +81,8 @@ if(!zdb::tableExists("zl_debug"))
     {
         if(!zdb::writeSQL("ALTER TABLE `zl_debug` ADD PRIMARY KEY (`ID`), ADD KEY `visitIP` (`visitIP`) USING BTREE, ADD KEY `userID` (`userID`) USING BTREE, ADD KEY `faultFunc` (`faultFunc`), ADD KEY `trackReason` (`debugReason`);")) { zl::fault($err); }
         if(!zdb::writeSQL("ALTER TABLE `zl_debug` MODIFY `ID` smallint UNSIGNED NOT NULL AUTO_INCREMENT;")) { zl::fault($err); }
+        zui::notify("ok", "zl_debug table created.");
     }
-	
-	if(!zdb::writeSQL($SQL)) { zl::fault($err); }
-	else { zui::notify("ok", "zl_debug table created."); }
 }
 else { zui::notify("ok", "zl_debug database table exists"); }
 
