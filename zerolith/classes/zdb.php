@@ -710,7 +710,7 @@ class zdb
         }
         else //must be database two!
         {
-        	self::$connections[2] = mysqli_connect(zl::$set['dbHost2'], zl::$set['dbUser2'], zl::$set['dbPass2'], zl::$set['dbName2'])
+        	self::$connections[2] = mysqli_connect(zl::$set['db2Host'], zl::$set['db2User'], zl::$set['db2Pass'], zl::$set['db2Name'])
             or self::fault("Unable to connect to MySQL server 2.", mysqli_error(self::$connections[2]));
         }
         
