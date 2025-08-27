@@ -9,10 +9,11 @@ class ztime
 	private static $reportedPerf = false;          //Tracker to prevent this from happening more than once.
 
 	public static $lastTimer = "";                 //Last timer ( for automatic stopping of timers )
-	public static $dateFormat = 'm/d/y g:i:s a';   //Human-readable date format
+	public static $dateFormat = 'm/d/y g:i:sa';   //Human-readable date format
+	public static $dateFormatSQL = 'Y-m-d G:i:s';  //SQL timestamp/datetime compatible format
+	public static $dateFormatNoSec = 'm/d/y g:ia';//Human-readable date format, without seconds
 	public static $DBMemCacheHits = 0;             //# of free database calls thanks to zdb mem cache
 	public static $DBDiskCacheHits = 0;            //# of free database calls thanks to zdb disk cache
-	public static $dateFormatSQL = 'Y-m-d G:i:s';  //SQL timestamp/datetime compatible format
 	
 	//now in PHP time
 	public static function now() { return date(self::$dateFormat); }        //speak human version.
@@ -30,12 +31,16 @@ class ztime
         return($date2 - $date1)/(3600*24);
     }
 
-    //Format a mySQL timestamp nicely.
-    public static function formatTimestamp($dateString, $dateOnly = false)
+    //Format a mySQL timestamp nicely for text.
+    public static function formatTimestamp($dateString, $dateOnly = false, $noSeconds = false)
     {
         if($dateString == "") { return ""; }
         if($dateOnly) { return(date('m/d/y', strtotime($dateString))); }
-        else { return(date(self::$dateFormat, strtotime($dateString))); }
+        else
+		{
+			if($noSeconds) { $df = self::$dateFormatNoSec; } else { $df = self::$dateFormatNoSec; }
+			return(date($df, strtotime($dateString)));
+		}
     }
 	
 	//convert ruby timestamps ( with TZ characters ) to PHP ones.
@@ -57,12 +62,14 @@ class ztime
 	
 	//Returns time numerically ( in the specified units ) between two MySQL timestamps.
 	//$timeUnit = sec/min/hr/day/wk/mo/yr
-	//Useful for returning precise values.
-	//ReturnFloat returns a 2 digit decimal, absolute takes the minus off the number if present.
+	//$returnFloat returns a 2 digit decimal
+	//$absolute takes the minus off the number if present.
 	//Note: ~66% written by phind (AI); good boy!
+	//Todo: Accept MySQL DATE for both sides by appending " 00:00:00" - help a programmer out!
 	public static function timeBetween($timeStart, $timeEnd, $timeUnit, $returnFloat = false, $absolute = true, $crashOnError = true)
 	{
-		if($timeEnd == "") { $timeEnd = time(); }
+		$timeUnit = rtrim(strtolower($timeUnit), "s"); //lowercase and strip 's' character for extra fault tolerance
+		if($timeEnd == "") { $timeEnd = self::now(); }
 		$timeStart = strtotime($timeStart);
 		$timeEnd = strtotime($timeEnd);
 		
@@ -84,7 +91,7 @@ class ztime
 			case 'mo':  $result = $diff / 2628000; break;
 			case 'yr':  $result = $diff / 31536000; break;
 			default:
-				if($crashOnError) { zl::fault("timeBetween was sent an invalid time unit"); }
+				if($crashOnError) { zl::fault("timeBetween was sent an invalid time unit; please use: sec|min|hr|day|wk|mo|yr"); }
 				else { return false; } //emulate PHP function behavior
 			break;
 		}
@@ -94,10 +101,14 @@ class ztime
 		else { return round($result); }
 	}
 	
-	//calculate time from a mysql timestamp to now
+	//calculate time from a mysql timestamp to now in text
 	public static function timeAgo($timestamp, $short = true, $fadeTimeText = true)
 	{
-		$timeSince = time() - strtotime($timestamp);
+
+        if(!isset($timestamp)){return "never";}
+        if (zs::contains($timestamp, '-')) { $timeSince = time() - strtotime($timestamp); }
+		else { $timeSince = time() - $timestamp; }
+
 	    if($timeSince < 1) { return 'just now'; }
 	    
 		if($short)
@@ -116,7 +127,7 @@ class ztime
 	        {
 	            $r = round($d);
 				
-				//fade text with time ( contractor mate uses this )
+				//fade text with time ( cm uses )
 		        if($fadeTimeText && $short)
 				{
 					if($unit == "d") //recentish
@@ -136,23 +147,37 @@ class ztime
 	}
 	
 	
-	//----- ZL stuffs -----
+	//----- ZL/profiler stuffs -----
 	
 	
 	//inject the zl_init time from bootup ( special case )
-    public static function injectInitTimer($timer)
+    public static function injectInitTimer($initTimer, $beforeTimer = "")
     {
     	//no monkeying please.
     	if(isset(self::$timers['zl_time_total']) && is_array(self::$timers['zl_time_total'])) { return; }
     	
     	//calculate initialization overhead.
-    	self::$timers['zl_init'] = $timer;
-    	self::stopTimer("zl_init");
+    	self::$timers['zl_init'] = ["total" => floatval(microtime(true) - $initTimer), "events" => 1];
+		
+		//reduce the ZL init time by the beforeload amount and register a timer event
+		if($beforeTimer != "")
+		{
+			self::$timers['zl_init']['total'] =- $beforeTimer;
+			self::$timers['zl_init_before'] = ["total" => $beforeTimer, "events" => 1];
+		}
     	
     	//time_total continues to run.
-    	self::$timers['zl_time_total'] = $timer;
+    	self::$timers['zl_time_total'] = ["total" => 0, "events" => 0, 'time' => $initTimer];
     }
-    
+	
+	//again for zl_init
+	public static function injectAfterTimer($afterTimer)
+	{
+		//no monkeying please.
+    	if(isset(self::$timers['zl_init_after']) && is_array(self::$timers['zl_init_after'])) { return; }
+		self::$timers['zl_init_after'] = ["total" => $afterTimer, "events" => 1];
+	}
+	
 	//a toggle between both start and stop functions.
     public static function stopWatch($timer)
     {
@@ -160,20 +185,20 @@ class ztime
         else { self::startTimer($timer); }
     }
 	
-	//start timer.
+	//Cheap trick to stop the last timer; used in logging and debug functions across Zerolith.
+	//WARNING: make 100% sure you are free of timer changes during a debug/log function before
+	//using this or you will suffer inaccurate results.
+	public static function stopLastTimer() { return self::stopTimer(self::$lastTimer); }
+	
+	//start profiler timer.
 	public static function startTimer($timer = "user")
 	{
-		if(!isset(self::$timers[$timer])) { self::$timers[$timer] = array("total" => 0, "events" => 0); } //create if doesn't exist.
+		if(!isset(self::$timers[$timer])) { self::$timers[$timer] = ["total" => 0, "events" => 0]; } //create if doesn't exist.
 		self::$timers[$timer]['time'] = microtime(true); //reference point for time passed.
 		self::$lastTimer = $timer;
 	}
 	
-	//Cheap trick to stop the last timer; used in logging and debug functions across zerolith.
-	//WARNING: make 100% sure you are free of timer changes during a debug/log function before
-	//using this or you WILL suffer inaccurate results.
-	public static function stopLastTimer() { return self::stopTimer(self::$lastTimer); }
-	
-	//stop and return timer.
+	//stop and return profiler timer.
     public static function stopTimer($timer = "user")
     {
 		if(zs::isBlank($timer)) { zl::fault("invalid timer sent."); }
@@ -329,7 +354,11 @@ class ztime
 				//we may still need to generate this for the debug log, so..
 				return ['report' => "<pre>" . $execTime . "</pre>", $execTime];
 			}
-			else { echo "\n<!-- Finished in: " . $execTime . " -->\n", ""; }
+			else
+			{
+				echo "\n<!-- Finished in: " . $execTime . " -->\n", "";
+				return ['report' => "<pre>" . $execTime . "</pre>", 'time' => $execTime];
+			}
 		}
     }
 }

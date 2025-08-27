@@ -1,6 +1,6 @@
-/* CSS Material color palette with additional dark level, color equalization, saturation equalization, luminosity equalization */
-:root{
+/* Material color palette with 2 additional dark levels, mid-luminance de-emphasis, color equalization, saturation equalization, luminosity equalization */
 
+:root{
 /* black and white */
 
 --bw1: hsl(0, 0%, 100%);
@@ -12,8 +12,9 @@
 --bw7: hsl(0, 0%, 49%);
 --bw8: hsl(0, 0%, 37%);
 --bw9: hsl(0, 0%, 25%);
---bw10:hsl(0, 0%, 14%);
---bw11:hsl(0, 0%, 0%);
+--bw10:hsl(0, 0%, 18%);
+--bw11:hsl(0, 0%, 10%);
+--bw12:hsl(0, 0%, 0%);
 
 /* full spectrum  -5% saturation + lower fade */
 
@@ -27,7 +28,8 @@
 --red8: hsl(0, 62%, 48%);
 --red9: hsl(0, 58%, 41%);
 --red10:hsl(0, 58%, 31%);
---red11:hsl(0, 60%, 20%);
+--red11:hsl(0, 60%, 23%);
+--red12:hsl(0, 61%, 15%);
 --pink1: hsl(342, 71%, 95%);
 --pink2: hsl(341, 70%, 89%);
 --pink3: hsl(342, 69%, 79%);
@@ -38,7 +40,8 @@
 --pink8: hsl(341, 58%, 44%);
 --pink9: hsl(338, 57%, 37%);
 --pink10:hsl(332, 53%, 27%);
---pink11:hsl(330, 53%, 18%);
+--pink11:hsl(330, 53%, 21%);
+--pink12:hsl(330, 52%, 16%);
 --purple1: hsl(292, 39%, 93%);
 --purple2: hsl(290, 39%, 86%);
 --purple3: hsl(291, 39%, 73%);
@@ -49,7 +52,8 @@
 --purple8: hsl(278, 46%, 38%);
 --purple9: hsl(272, 47%, 33%);
 --purple10:hsl(260, 49%, 30%);
---purple11:hsl(256, 50%, 22%);
+--purple11:hsl(256, 50%, 25%);
+--purple12:hsl(256, 50%, 19%);
 --purpleDeep1: hsl(261, 41%, 94%);
 --purpleDeep2: hsl(258, 40%, 87%);
 --purpleDeep3: hsl(259, 40%, 75%);
@@ -60,7 +64,8 @@
 --purpleDeep8: hsl(250, 45%, 42%);
 --purpleDeep9: hsl(247, 48%, 36%);
 --purpleDeep10:hsl(241, 50%, 31%);
---purpleDeep11:hsl(240, 53%, 22%);
+--purpleDeep11:hsl(240, 53%, 25%);
+--purpleDeep12:hsl(240, 53%, 18%);
 --indigo1: hsl(227, 41%, 94%);
 --indigo2: hsl(228, 41%, 87%);
 --indigo3: hsl(227, 41%, 76%);
@@ -71,9 +76,10 @@
 --indigo8: hsl(225, 53%, 38%);
 --indigo9: hsl(226, 56%, 33%);
 --indigo10:hsl(227, 63%, 27%);
---indigo11:hsl(228, 68%, 19%);
+--indigo11:hsl(228, 68%, 22%);
+--indigo12:hsl(228, 68%, 16%);
 --blue1: hsl(204, 78%, 94%);
---blue2: hsl(206, 78%, 89%);
+--blue2: hsl(206, 78%, 88%);
 --blue3: hsl(206, 80%, 78%);
 --blue4: hsl(206, 80%, 70%);
 --blue5: hsl(206, 81%, 62%);
@@ -82,7 +88,8 @@
 --blue8: hsl(208, 75%, 40%);
 --blue9: hsl(209, 77%, 34%);
 --blue10:hsl(212, 88%, 27%);
---blue11:hsl(214, 89%, 19%);
+--blue11:hsl(214, 89%, 23%);
+--blue12:hsl(214, 89%, 16%);
 --blueLight1: hsl(195, 85%, 95%);
 --blueLight2: hsl(196, 85%, 90%);
 --blueLight3: hsl(196, 85%, 79%);
@@ -93,7 +100,8 @@
 --blueLight8: hsl(198, 88%, 38%);
 --blueLight9: hsl(199, 92%, 31%);
 --blueLight10:hsl(202, 97%, 25%);
---blueLight11:hsl(204, 97%, 16%);
+--blueLight11:hsl(204, 97%, 20%);
+--blueLight12:hsl(204, 97%, 13%);
 --cyan1: hsl(185, 70%, 94%);
 --cyan2: hsl(187, 71%, 87%);
 --cyan3: hsl(187, 71%, 76%);
@@ -104,7 +112,8 @@
 --cyan8: hsl(187, 74%, 35%);
 --cyan9: hsl(185, 73%, 27%);
 --cyan10:hsl(182, 72%, 21%);
---cyan11:hsl(180, 69%, 14%);
+--cyan11:hsl(180, 69%, 16%);
+--cyan12:hsl(180, 69%, 11%);
 --teal1: hsl(176, 43%, 93%);
 --teal2: hsl(176, 43%, 85%);
 --teal3: hsl(175, 45%, 74%);
@@ -115,7 +124,8 @@
 --teal8: hsl(172, 68%, 33%);
 --teal9: hsl(172, 68%, 26%);
 --teal10:hsl(170, 68%, 22%);
---teal11:hsl(168, 70%, 15%);
+--teal11:hsl(168, 70%, 16%);
+--teal12:hsl(168, 70%, 12%);
 --green1: hsl(125, 38%, 94%);
 --green2: hsl(124, 37%, 88%);
 --green3: hsl(124, 36%, 76%);
@@ -126,7 +136,8 @@
 --green8: hsl(124, 38%, 39%);
 --green9: hsl(125, 40%, 31%);
 --green10:hsl(126, 43%, 25%);
---green11:hsl(127, 45%, 17%);
+--green11:hsl(127, 45%, 20%);
+--green12:hsl(127, 45%, 14%);
 --greenLight1: hsl(86, 45%, 94%);
 --greenLight2: hsl(87, 43%, 89%);
 --greenLight3: hsl(87, 41%, 79%);
@@ -137,8 +148,9 @@
 --greenLight8: hsl(93, 38%, 41%);
 --greenLight9: hsl(96, 38%, 34%);
 --greenLight10:hsl(106, 38%, 27%);
---greenLight11:hsl(108, 39%, 19%);
---lime1: hsl(63, 63%, 95%); /*4*/
+--greenLight11:hsl(108, 39%, 22%);
+--greenLight12:hsl(108, 39%, 14%);
+--lime1: hsl(63, 63%, 95%);
 --lime2: hsl(63, 62%, 90%);
 --lime3: hsl(63, 62%, 81%);
 --lime4: hsl(63, 62%, 74%);
@@ -148,7 +160,8 @@
 --lime8: hsl(60, 42%, 47%);
 --lime9: hsl(56, 44%, 39%);
 --lime10:hsl(50, 48%, 31%);
---lime11:hsl(48, 50%, 21%);
+--lime11:hsl(48, 50%, 24%);
+--lime12:hsl(48, 50%, 15%);
 --yellow1: hsl(52, 96%, 96%);
 --yellow2: hsl(51, 96%, 92%);
 --yellow3: hsl(51, 96%, 86%);
@@ -159,7 +172,8 @@
 --yellow8: hsl(39, 91%, 60%);
 --yellow9: hsl(33, 89%, 53%);
 --yellow10:hsl(26, 80%, 44%);
---yellow11:hsl(24, 78%, 31%);
+--yellow11:hsl(24, 78%, 34%);
+--yellow12:hsl(24, 78%, 25%);
 --amber1: hsl(43, 96%, 95%);
 --amber2: hsl(42, 96%, 91%);
 --amber3: hsl(42, 96%, 82%);
@@ -170,7 +184,8 @@
 --amber8: hsl(31, 95%, 59%);
 --amber9: hsl(27, 93%, 51%);
 --amber10:hsl(20, 84%, 44%);
---amber11:hsl(18, 82%, 31%);
+--amber11:hsl(18, 82%, 33%);
+--amber12:hsl(18, 82%, 25%);
 --orange1: hsl(35, 96%, 94%);
 --orange2: hsl(34, 96%, 89%);
 --orange3: hsl(33, 94%, 80%);
@@ -181,7 +196,8 @@
 --orange8: hsl(24, 84%, 54%);
 --orange9: hsl(21, 79%, 47%);
 --orange10:hsl(15, 73%, 43%);
---orange11:hsl(13, 72%, 31%);
+--orange11:hsl(13, 72%, 34%);
+--orange12:hsl(13, 72%, 24%);
 --deepOrange1: hsl(6, 65%, 96%);
 --deepOrange2: hsl(13, 90%, 91%);
 --deepOrange3: hsl(13, 89%, 81%);
@@ -192,7 +208,8 @@
 --deepOrange8: hsl(11, 71%, 48%);
 --deepOrange9: hsl(11, 68%, 42%);
 --deepOrange10:hsl(11, 66%, 33%);
---deepOrange11:hsl(10, 69%, 22%);
+--deepOrange11:hsl(10, 69%, 25%);
+--deepOrange12:hsl(10, 69%, 16%);
 
 /* arbitrary colors */
 
@@ -207,6 +224,7 @@
 --brown9: hsl(10, 25%, 26%);
 --brown10:hsl(10, 26%, 20%);
 --brown11:hsl(10, 28%, 15%);
+--brown12:hsl(10, 28%, 10%);
 --blueGrey1: hsl(192, 14%, 93%);
 --blueGrey2: hsl(198, 15%, 86%);
 --blueGrey3: hsl(198, 14%, 75%);
@@ -218,26 +236,31 @@
 --blueGrey9: hsl(197, 15%, 29%);
 --blueGrey10:hsl(200, 15%, 21%);
 --blueGrey11:hsl(203, 15%, 15%);
+--blueGrey12:hsl(203, 15%, 10%);
 
 /* colored table rows */
 
---redRow:           hsl(351, 58%, 94%);
+--redRow:           hsl(351, 69%, 95%);
 --redRowAlt:        hsl(356, 70%, 89%);
---redRowBorder:     hsl(1, 69%, 79%);
+--redRowBorder:     hsl(1, 69%, 80%);
 --amberRow:         hsl(43, 65%, 92%);
---amberRowAlt:      hsl(46, 74%, 85%);
---yellowRow:        hsl(49, 72%, 92%);
---yellowRowAlt:     hsl(51, 76%, 85%);
---orangeRowBorder:  hsl(37, 81%, 75%);
---greenRow:         hsl(127, 40%, 94%);
+--amberRowAlt:      hsl(46, 73%, 85%);
+--amberRowBorder:   hsl(37, 80%, 76%);
+--greenRow:         hsl(127, 40%, 93%);
 --greenRowAlt:      hsl(123, 36%, 86%);
 --greenRowBorder:   hsl(125, 40%, 73%);
+--tealRow:          hsl(176, 46%, 90%);
+--tealRowAlt:       hsl(176, 46%, 83%);
+--tealRowBorder:    hsl(175, 50%, 71%);
 --blueRow:          hsl(208, 60%, 93%);
 --blueRowAlt:       hsl(205, 65%, 86%);
 --blueRowBorder:    hsl(205, 75%, 75%);
+--indigoRow:        hsl(227, 59%, 92%);
+--indigoRowAlt:     hsl(228, 55%, 86%);
+--indigoRowBorder:  hsl(227, 54%, 77%);
 --purpleRow:        hsl(290, 46%, 95%);
 --purpleRowAlt:     hsl(291, 40%, 87%);
---purpleRowBorder:  hsl(292, 45%, 76%);
+--purpleRowBorder:  hsl(292, 45%, 77%);
 
 /* generic colors ( intensity level 6 ) */
 

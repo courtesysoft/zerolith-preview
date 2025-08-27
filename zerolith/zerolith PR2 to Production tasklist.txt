@@ -1,0 +1,78 @@
+Preview release R2
+---------------------------------------------------------------------
+[x] reset config file to stock
+[x] Make sure sqlite writes to /zerolithData so newbies don't do dumb stuff
+[x] chown -R www-data:www-data /var/www/
+[ ] Test ZL 1.24 on a few current production installations and let it sit for a few weeks.
+
+Preview release aftermath and refinement
+---------------------------------------------------------------------
+
+
+
+Production release ~v1.30 ( WIP )
+---------------------------------------------------------------------
+
+[ ] First - take TODOS out of all classes and put in here and sort what is for production readiness and what is for refinement
+
+[ ] zmail
+	[ ] cronjob to delete stored email after X months ( settable ), may be able to use existing db cleaner script
+		[ ] add instructions on how to set that up
+
+[ ] Zperm
+	[ ] user types -> levels array ( new zdb variable in zl::$site )
+	[ ] hasUserTypeOrAbove()
+	[ ] finish hasPermission() and allow it to accept string ( 1 check ) or keyed array ( multiple checks )
+	[ ] finish rest of missing functions
+
+[ ] Zpage
+	[ ] Move Zpage settings to their own array because they're about to get big (zl::$page -> zpage::$set)
+	[ ] add variable to before/after for every html aspect ( start/nav/end )
+	[ ] callbacks for nav generation, avatar, notifications
+	[ ] multi level navigation
+
+[ ] zpta 2.0
+	[ ] consider katrina's idea of associated array of associated arrays for definition; would be clearer
+	[ ] can we generate a search bar?
+	[ ] fix page forward/backwards issue
+	[ ] add parameter to make filtering happen easily
+
+[ ] External zlhx files
+	[ ] Test usage in zlhx demo
+	[ ] Add guidance on how to use externally + internally
+
+[ ] Finish zlite
+	[ ] homogenize to work like zdb
+		[ ] add default database setting in zl_config
+		[ ] use same switching mechanism
+	[ ] document it
+	[ ] add check for sqlite extension on zenvCheck::init if sqlite database set to something other than ''
+
+[ ] zl.php
+	[ ] improve boot speed/simplicity
+		[ ] turn bootup consts into variables ( faster, can remove their mem use )
+		[ ] turn paths into variables in config and ZL lookups ( faster/less mem )
+		[ ] is zptas class faster in nginx?
+
+[ ] zmail
+	[ ] design way to store and read list of categories of emails user doesn't
+		[ ] give example
+		[ ] use database lookup to produce
+
+[ ] copy system panel from pom
+	[ ] create zl_config database table
+		[ ] minimum: devEmailForward, maintenance message,
+
+[ ] zdebug
+	[ ] reform quips
+		[ ] form arrays in one compound statement ( faster? ), or use variables instead of arrays. Run profiler to find option
+		[ ] zui::readmore is slow when used en-masse in debugger. Can we send full text and clip with javascript?
+		[ ] debugging is mature - can we skip using the abstractions in high frequency libraries like zdb::, and use straight text formation  for moar speed?
+	[ ] break debugger into it's own class, debug settings into their own array,
+
+[ ] zdb
+	[ ] fix debug timing
+	[ ] Investigate mr. covirgance's claim about bind variables making things slower when using parameterized database reads
+	"That’s probably the bind variable issue. Try pulling a query plan with injected values and with bind variables. It might be hard to find a tool for the latter. But if you can, the results can be eye opening.
+	Missed indexes, partition scans, poor joins, etc."
+	[ ] Add button to SQL explain query on any query using JS

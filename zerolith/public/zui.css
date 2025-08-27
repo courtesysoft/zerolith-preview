@@ -1,16 +1,16 @@
 /* ----- Zerolith Template Basic HTML Element Styling, zlt_ namespace ------
 07/07/2023 - v1.1 - Feature complete!
 
-TODO for v1.2:
-[ ] debugger CSS -> zd.css, zpage CSS -> zpage.css
+TODO for v1.3 ( breaking change ):
+[ ] Finish test coverage in demos/zui.php
+[ ] debugger CSS -> zdebug.css, zpage CSS -> zpage.css
 [ ] Remove unnecessary shadows from boxes - more consistent with style
-[ ] Refactor to pre-nested properties format ( indenting for sub classes of a class )
-[ ] Remove vintage code - old modal & anything not covered by zui:: test
-
-Todo for v1.22 ( breaking change ):
+[ ] Remove vintage code - old modal & anything not covered by zui.php
+[ ] re-namespace to zui_ and refactor zui:: to use it
 [ ] Consistent camelCase
 [ ] Descending shorthand classes w/o a zlt_ before them across the board
-[ ] re-namespace to zui_ and refactor zui:: to use it
+[ ] Refactor to pre-nested properties format ( indenting for sub classes of a class )
+
 
 */
 
@@ -34,7 +34,7 @@ pre { font-size:var(--zl_fontPre); }
 	border-spacing: 0px;
 	border: solid 1px var(--zl_black);
 	box-shadow: 5px 5px 9px var(--zl_fadeB17);
-	min-width:170px;
+	min-width:150px;
 	max-width:1850px;
 	margin-right:5px;
 	word-break:break-word;
@@ -54,20 +54,9 @@ pre { font-size:var(--zl_fontPre); }
 	padding: var(--zl_spc1) var(--zl_spc3) calc(var(--zl_spc2) - 1px)  var(--zl_spc3);
 }
 
-/* special borders for colored rows */
-.zlt_table tr.zl_bgGreenRow td, .zlt_table tr.zl_bgGreenRowAlt td
-{ border-left: 1px solid var(--greenRowBorder); border-top: 1px solid var(--greenRowBorder); }
-.zlt_table tr.zl_bgYellowRow td, .zlt_table tr.zl_bgYellowRowAlt td
-{ border-left: 1px solid var(--orangeRowBorder); border-top: 1px solid var(--orangeRowBorder); }
-.zlt_table tr.zl_bgAmberRow td, .zlt_table tr.zl_bgAmberRowAlt td
-{ border-left: 1px solid var(--orangeRowBorder); border-top: 1px solid var(--orangeRowBorder); }
-.zlt_table tr.zl_bgRedRow td, .zlt_table tr.zl_bgRedRowAlt td
-{ border-left: 1px solid var(--redRowBorder); border-top: 1px solid var(--redRowBorder); }
-.zlt_table tr.zl_bgPurpleRow td, .zlt_table tr.zl_bgPurpleRowAlt td
-{ border-left: 1px solid var(--purpleRowBorder); border-top: 1px solid var(--purpleRowBorder); }
-.zlt_table tr.zl_bgBlueRow td, .zlt_table tr.zl_bgBlueRowAlt td
-{ border-left: 1px solid var(--blueRowBorder); border-top: 1px solid var(--blueRowBorder); }
-
+/* editable TR; reduces padding */
+.zlt_table tr.zl_editableTR td .zlt_i { margin:var(--zl_spc-1) var(--zl_spc-3) calc(var(--zl_spc-2) - 1px)  var(--zl_spc-2) !important; }
+.zlt_table tr.zl_editableTR td .zlt_button { margin-top:var(--zl_spc-1) !important; margin-bottom:calc(var(--zl_spc-2) - 1px) !important; }
 
 .zlt_table th img { width:18px; height:18px; vertical-align:middle; }
 
@@ -119,6 +108,7 @@ pre { font-size:var(--zl_fontPre); }
 /* Add 'degrade long text to ellipse' characteristic to table */
 /* Note: grid-template-columns must be 'auto' for 1 row, 'auto auto' for 2 rows etc.. */
 /* inspired by: https://adamlynch.com/flexible-data-tables-with-css-grid/ */
+/* todo: rename this to 'clip' because 'degrade' is weird language */
 
 .zlt_table.degrade tbody { display: grid; grid-template-columns: auto auto auto auto; }
 .zlt_table.degrade tr { display: contents; }
@@ -138,6 +128,8 @@ pre { font-size:var(--zl_fontPre); }
 .zlt_table.degrade tr:nth-child(odd) > td { background-color: var(--zl_whiteDark); }
 .zlt_table.degrade tr:nth-child(even) > td { background-color: var(--zl_white); }
 
+/* tighter horizontal padding */
+.zlt_table.tight td, .zlt_table.tight th { padding: var(--zl_spc2) var(--zl_spc2) !important; }
 
 /* generic blue link style */
 
@@ -154,14 +146,24 @@ pre { font-size:var(--zl_fontPre); }
 {
 	opacity:0;
     position: absolute;
-    right: -4px;
+    right: 5px; /* 0px won't work, and actually screws crap up bad */
+	top:0px;
 	color:var(--zl_greyLight);
 	-webkit-text-stroke: 1px var(--zl_blackDark);
 }
 .zl_TFFLink:hover .zl_right i{ opacity:1; cursor:pointer; }
 
+
 /* Highlight the filter link TD - working only on Chrome currently */
 td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33); }
+
+/* make link 100% of the width */
+td a.zl_TFFLink
+{
+	width:100%;
+	height:100%;
+	display:block;
+}
 
 /* columns - DEPRECATED */
 
@@ -173,7 +175,7 @@ td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33
 
 .zlt_button
 {
-	border-radius: var(--zl_radDefault) !important;
+	border-radius: var(--zl_rad) !important;
     background: linear-gradient(var(--zl_linkMid),var(--zl_linkDark) 66%) !important;
     border: 1px solid var(--zl_linkDarkDark) !important;
     color: var(--zl_white) !important;
@@ -214,6 +216,8 @@ td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33
 
 .zlt_button.small { padding: var(--zl_spc1) var(--zl_spc4) var(--zl_spc2) var(--zl_spc4) !important; }
 .zlt_button.small .zlt_micon { font-size: var(--zl_font4) !important; }
+.zlt_button.small.zlt_button.iconOnly .zlt_micon { font-size: var(--zl_font4) !important; margin-right:-5px !important; padding-left: 2px !important; padding-right:0px !important; }
+
 
 /* ZL templated button styles */
 
@@ -318,9 +322,9 @@ td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33
     box-shadow: 2px 2px 5px var(--zl_fadeB10) inset;
 	font-style: normal !important;
 	font-size: var(--zl_font2) !important;
-	border-radius: var(--zl_radDefault) !important;
+	border-radius: var(--zl_rad) !important;
 	background-color:var(--zl_white) !important;
-	max-width:unset !important; /* Anti-CS rule */
+	max-width:unset !important; /* Anti-pom rule */
 	box-sizing:border-box;
 }
 
@@ -338,7 +342,7 @@ td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33
 
 .zlt_textArea, .zlt_textBox { min-width: 33px; }
 .zlt_textArea { font-size: var(--zl_font) !important; font-family:unset; }
-.zlt_selectBox { min-width:75px; max-height:29px; padding:4px !important; }
+.zlt_selectBox { min-width:60px; max-height:29px; padding:4px !important; }
 
 /* combined attributes */
 
@@ -370,7 +374,7 @@ td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33
 	left: 0px;
 	top: 3px;
 	background: var(--zl_white);
-	border-radius: var(--zl_radDefault);
+	border-radius: var(--zl_rad);
 	box-shadow: 2px 2px 5px var(--zl_greyLight) inset;
 }
 
@@ -403,7 +407,7 @@ td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33
 {
 	height: 18px !important;
 	width: 18px !important;
-	border-radius: var(--zl_radDefault);
+	border-radius: var(--zl_rad);
 	left: 0px;
 	top: 3px;
 }
@@ -417,7 +421,7 @@ td:has(>.zl_TFFLink):hover { box-shadow:inset 0px 0px 15px 15px var(--zl_fadeW33
 	background: radial-gradient(circle at 5px 5px, var(--zl_white) 0%, var(--zl_whiteDark) 33%, var(--zl_grey) 90%) !important;
 }
 
-.zlt_optionBox input[type="radio"] + label::after { content: unset; border-radius: var(--zl_radDefault); }
+.zlt_optionBox input[type="radio"] + label::after { content: unset; border-radius: var(--zl_rad); }
 
 .zlt_optionBox label::after, .zlt_optionBox input[type="radio"]:checked + label::after	/* mini box in box */
 {
@@ -476,7 +480,7 @@ input[type="search" i]::-webkit-search-cancel-button:hover { cursor:pointer; }
 	background-color: var(--zl_fadeB75);
 	color: var(--zl_white);
 	text-align: center;
-	border-radius: var(--zl_radDefault);
+	border-radius: var(--zl_rad);
 	padding: 5px;
 	position: absolute;
 	z-index: 1;
@@ -512,7 +516,7 @@ input[type="search" i]::-webkit-search-cancel-button:hover { cursor:pointer; }
 	display:table;
 	max-width:750px;
 	max-height: 1000px;
-	border-radius: var(--zl_radDefault);
+	border-radius: var(--zl_rad);
 	text-shadow:2px 2px 0px var(--zl_fadeW25);
 }
 
@@ -542,6 +546,10 @@ input[type="search" i]::-webkit-search-cancel-button:hover { cursor:pointer; }
 {
 	padding:0px;
 }
+
+/* for new version that does it correctly */
+.zlt_notifywarn .nicon, .zlt_notifyerr .nicon, .zlt_notifyok .nicon { position:absolute; }
+.zlt_notifywarn .ntext, .zlt_notifyerr .ntext, .zlt_notifyok .ntext { margin-left:30px; }
 
 .zlt_box
 {
@@ -578,7 +586,7 @@ input[type="search" i]::-webkit-search-cancel-button:hover { cursor:pointer; }
     background-color: unset;
 	position:relative;
 	top:2px;
-	border-radius:var(--zl_radDefault);
+	border-radius:var(--zl_rad);
 }
 
 .zlt_colorPicker:hover { cursor:pointer; opacity:0.8; }
@@ -640,7 +648,7 @@ button[data-modal][aria-controls], [aria-role="button"][data-modal][aria-control
 /* The modal section is added via JS */
 .zlt_modal
 {
-	1background:url('/zerolith/public/modalLoading.gif');
+	/* background:url('/zerolith/public/modalLoading.gif'); */
 	background-position:center;
 	background-repeat:no-repeat;
 	background-color: rgba(255,255,255,1);
@@ -651,7 +659,7 @@ button[data-modal][aria-controls], [aria-role="button"][data-modal][aria-control
 	top: 10%;
 	z-index: 1002;
 	border: 1px solid rgba(0,0,0,1);
-	1transition: opacity .25s ease-out, visibility 0s ease-out .25s, transform .25s ease-out .25s;
+	/*transition: opacity .25s ease-out, visibility 0s ease-out .25s, transform .25s ease-out .25s;*/
 	backface-visibility: hidden;
 	opacity: 0;
 	visibility: hidden;
@@ -751,8 +759,8 @@ body.-zlt_modal-open { overflow: hidden; }
 
 #zl_modal, #zl_modal_sub
 {
-	width: calc(100vw - 75px);
-	max-width:750px;
+	/*width: calc(100vw - 75px);*/
+	max-width:950px;
 	max-height:calc(100vh - 75px);
 	border:1px solid var(--zl_black);
 	box-shadow: 3px 3px 7px var(--zl_fadeB25);
@@ -916,7 +924,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	background: linear-gradient(var(--zl_link),var(--zl_link)) !important;
 	border: 1px solid var(--zl_linkDark) !important;
 	margin-left:-1px !important;
-	border-radius:var(--zl_radDefault) !important;
+	border-radius:var(--zl_rad) !important;
 	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW25), inset 0px -10px 10px 0px var(--zl_fadeB10) !important;
 	line-height:1.2;
 }
@@ -989,7 +997,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	margin:0px;
 }
 
-.zui_tabWrap ul.tabs li /* counteract CS */
+.zui_tabWrap ul.tabs li /* counteract pom */
 {
 	padding-bottom:unset !important;
 }
@@ -1018,7 +1026,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	background: linear-gradient(var(--zl_link),var(--zl_link)) !important;
 	border: 1px solid var(--zl_linkDark) !important;
 	margin-left:-1px !important;
-	border-radius:var(--zl_radDefault) !important;
+	border-radius:var(--zl_rad) !important;
 	box-shadow: inset 1px 1px 0px 0px var(--zl_fadeW25), inset 0px -10px 10px 0px var(--zl_fadeB10) !important;
 	line-height:1.2;
 	cursor: pointer;
@@ -1043,7 +1051,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	resize:both;
 	overflow-y:auto;
 	overflow-x:clip;
-	height:400px; width:750px; min-width:500px; max-width:95vw; min-height:300px; max-height:85vh;
+	height:450px; width:750px; min-width:500px; max-width:95vw; min-height:300px; max-height:85vh;
 }
 
 /* As we cannot replace the numbers with variables or calls to element properties, the number of this selector parts is our tab count limit */
@@ -1157,7 +1165,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	min-height:46px;
 }
 
-.zlt_siteLogo { height:22px; vertical-align:middle; padding-right:9px; margin-left:-2px; }
+.zlt_siteLogo { height:20px; vertical-align:middle; margin-right:9px; margin-left:0px; }
 
 .zlt_headerAvatar
 {
@@ -1197,6 +1205,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	display:inline-block;
 }
 
+/*
 #sideNav
 {
 	left: 0;
@@ -1204,7 +1213,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	margin: 0;
 	display:table-cell;
 	vertical-align: top;
-	width: var(--zl_sideNavWidth); /* hard set to prevent visual glitch */
+	width: var(--zl_sideNavWidth); /* hard set to prevent visual glitch /
 	height: 100%;
 	padding-bottom: 0px;
 	overflow-x: hidden;
@@ -1228,6 +1237,23 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	float: left;
 	position: relative;
 	margin: 4px 18px 0px 10px;
+}
+*/
+
+#zl_sideNav {
+	display: block;
+	position: fixed;
+	top: 0; bottom: 0;
+	width: var(--zl_sideNavWidth); /* hard set to prevent visual glitch */
+	margin-left: -1px;
+	z-index: 999;
+	overflow-x: hidden;
+
+	box-shadow: 4px 0px 8px var(--zl_fadeB33);
+	background: linear-gradient(180deg, rgba(45,45,45,0.95) 15%, rgba(0,0,0,0.82) 100%), url("/zerolith/public/navbg.jpg");
+	background-size: cover;
+	border: 1px solid var(--zl_blackDark);
+	color: white;
 }
 
 #zlt_sideNavClose
@@ -1255,7 +1281,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
     text-decoration: none;
 	display: block;
 	padding: var(--zl_spc3)  var(--zl_spc4);
-	/* border-radius: var(--zl_radDefault); */
+	/* border-radius: var(--zl_rad); */
 	color:var(--zl_greyLight);
 	text-shadow: 2px 2px 0px var(--zl_fadeB50);
 }
@@ -1319,13 +1345,74 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 
 .zlt_dropDown-content a:hover { background-color: #eee; }
 
+/* Dropdown Content (Hidden by Default) */
+.zlt_notification_dropDown-content
+{
+	display: none;
+	position: absolute;
+	background-color: var(--zl_white);
+	min-width: 400px;
+	box-shadow: 4px 4px 8px 0px rgba(0,0,0,0.2);
+	border: 1px solid var(--zl_greyDark);
+	z-index: 1;
+	top:40px;
+	right:10px;
+	font-size:13px;
+}
+
+/* this is contractormate-specific and is used by zpage - DS 01/*/
+
+.notificationTable { min-width: 100%; }
+
+.notificationTable td
+{
+	padding: 2px;
+	text-align: left;
+}
+
+.notificationTable tr:nth-child(2) td:nth-child(1) { width: 1em; }
+
+.open {display:block !important;}
+
+
+.notification_icon {
+	color: black;
+	display: inline-block; /* Inline elements with width and height. TL;DR they make the icon buttons stack from left-to-right instead of top-to-bottom */
+	position: relative; /* All 'absolute'ly positioned elements are relative to this one */
+	padding: 2px 5px; /* Add some padding so it looks nice */
+}
+
+/* Make the badge float in the top right corner of the button */
+.notification_icon__badge {
+	background-color: #fa3e3e;
+	border-radius: 3px;
+	color: white;
+	padding: 1px 3px;
+	font-size: 10px;
+	font-weight:bold;
+	position: absolute; /* Position the badge within the relatively positioned button */
+	top: 0;
+	right: 9px;
+}
+
+.zlt_dropDown-content a
+{
+	font-size:var(--zl_font) !important;
+	color: black !important;
+	padding: 5px 7.5px;
+	text-decoration: none !important;
+	display: block;
+}
+
+.zlt_dropDown-content a:hover { background-color: #eee; }
+
 /* dynamics for different sizes */
 
 @media only screen and (max-width : 600px) /* below 600px ( mobile phones ) */
 {
 	#zlt_headerWrap { font-size: 15px !important; height:unset; }
 	#zlt_navMenu { padding: 5px 0px 28px 0px !important; }
-	#sideNav { position: fixed; top: 0px; }
+	/*#sideNav { position: fixed; top: 0px; }*/
 	.zlt_headerAvatar { width:25px; height:25px; }
 	.zlt_pageTitle { padding:7px; }
 	#zlt_navHead > img { display:none; }
@@ -1347,7 +1434,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 {
 	#zlt_navHead { padding-top:5px; }
 	#zlt_navMenu { padding: 7px 0px 28px 0px !important; }
-	#sideNav { position:fixed; top:0px; }
+	/*#sideNav { position:fixed; top:0px; }*/
 	.zlt_burger { padding:5px !important; }
 	#zlt_mainWrap { padding: 15px 10px 6px 10px; }
 	#zlt_navHead > img { display:none; }
@@ -1360,12 +1447,23 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 
 @media only screen and (min-width: 1000px) /* 992px and above ( desktop ) */
 {
-	#sideNav a.button-collapse, #zlt_sideNavClose { display: none; }
-	#sideNav { position:fixed; transform: translateX(0%) !important; left:unset !important; margin-left: -1px; }
+	/*#sideNav a.button-collapse,*/ #zlt_sideNavClose { display: none; }
+	/*#sideNav { position:fixed; transform: translateX(0%) !important; left:unset !important; margin-left: -1px; }*/
 	.zlt_burger { display:none; }
 	#zlt_mainWrap { padding: 20px 20px 20px calc(var(--zl_sideNavWidth) + 20px); }
 	#zlt_mainWrap.noNav { padding: 20px !important; }
 	.noSidebarPad { padding-left:0px !important; }
+}
+
+@media only screen and (max-width: 1000px)
+{
+	#zl_sideNav {
+		left: 0;
+		transform: translateX(-105%);
+		will-change: transform;
+		transition: transform 250ms ease-in-out;
+	}
+	#zl_sideNav[open] { transform: translateX(0); }
 }
 
 /* printer settings */
@@ -1374,7 +1472,8 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	#zlt_pageWrap { min-height:calc(100vh - 20px); }
 	#zlt_mainWrap { box-shadow:none; padding:0px; border:none; height:auto; min-height: unset; }
 	#zlt_headerWrap { background: none !important; }
-	#sideNav{ display:none; }
+	/*#sideNav{ display:none; }*/
+	#zl_sideNav { display: none; }
 	.zlt_burger { display: none; }
 	table { box-shadow:none !important; }
 	th { background-color: #FFF !important; color: #000 !important; }
@@ -1399,7 +1498,7 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 .zd_codeTable tr:first-child th, .zd_codeTable tr:first-child td { border-top: solid 1px var(--zl_black); }
 .zd_codeTable tr:first-child { border-top: solid 1px var(--zl_black) !important; }
 
-.zd_codeTable tr:nth-child(odd) { background-color:var(--zl_whiteDark) !important; }
+.zd_codeTable tr:nth-child(odd) { background-color:var(--zd_whiteDark) !important; }
 .zd_codeTable td{ font-size:var(--zl_fontPre) !important; border-top: 1px solid var(--zl_fadeB10); }
 .zd_codeTable tr, .zd_codeTable td { padding:1px 3px; }
 .zd_codeTable pre { word-wrap:normal; font-size:var(--zl_fontPre); line-height: 1; }
@@ -1448,4 +1547,14 @@ a:hover i.zlt_micon.linkHov, a:hover i.zlt_miconO.linkHov, a:hover i.zlt_miconTT
 	background: linear-gradient(var(--indigo3),var(--indigo6) 66%) !important;
 	padding: 2px 5px;
 	padding-right: 3px;
+}
+
+
+@keyframes zui_fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+@keyframes zui_fadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
 }

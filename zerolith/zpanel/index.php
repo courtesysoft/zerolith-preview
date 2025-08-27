@@ -1,87 +1,34 @@
 <?php
-//Possibly outdated 02/05/2024 - DS
-//Router intended for zPanel.
-//Needs testing with heirarchical folders ( probably not working )
-//Also add feature: *heirarchy/scriptname/var/value/var/value
+//homepage for zpanel - incomplete
+require("../zl_init.php"); //Load framework. Creates the zl object.
+require "zpanelConfig.php"; //load zpanel settings modification
 
-exit;
+zpage::start("Zpanel Home");
+?>Welcome to Zerolith!<br>
 
-//----- Zerolith bootloader begin -----
-
-require("../../inc/globals.php"); //Load framework. Creates the zl object.
-zl::setDebugLevel(3);
-zl::$page['wrap'] = true;
-
-ztime::startTimer("zl_router");
-
-//----- Customize the router's behavior. -----
-
-$skipFirstSegs = 2;   //remove the first X segments of the route.
-$scriptFolders = 0;   //0 if all your scripts are in one folder.
-$scriptRoot = "";     //set a root where your script files start, If any; make sure there's a slash at the end.
-$scriptHome = "home"; //where we go when there's no route specified.
-
-//----- Router code -----
-
-$zl_route = [];
-$zl_route['origUrl'] = parse_url($_SERVER['REQUEST_URI'])['path']; //need a copy of this for debug.
-
-//malicious string?
-if($zl_route['origUrl'] != preg_replace("/[^A-Za-z0-9?=\/-_]/", "", $zl_route['origUrl']))
-{
-	//mark minor zabuse. This will add up if someone is attempting to probe.
-	zkarma::reportAbuse(false, "Strange characters sent to router.");
-	$zl_route['logic'] = "url error";
-	$zl_route['script'] = $zl_route['origUrl'];
-	zl_badController("Invalid or corrupt URL.", $zl_route);
-}
-
-$url = explode("/", $zl_route['origUrl']);
-
-//strip the unnecessary first segments.
-for($i = -1; $i < $skipFirstSegs; $i++) { array_shift($url); }
-
-//determine the script filename.
-if(is_array($url) && !zs::isBlank($url[0]))
-{
-	$nextSeg = array_shift($url);
+<div class = "zl_cols">
+<div class = "col">
+	<h3>Features</h3>
+	<a href="install.php">ZL Installer</a><br>
+	<a href="demo/index.php">Demo Gallery</a><br>
+	<br>
+	<a href="bugLog.php">Bug Log</a><br>
+	<a href="mailLog.php">Mail Log</a><br>
+	<a href="test/index.php">ZTest</a><br>
 	
-	//for flat heirarchy
-	if($scriptFolders == 0)
+</div>
+<div class = "col">
+	<h3>Documentation</h3>
+	<?php
+	$docs = glob("docs/*.md");
+	foreach($docs as $doc)
 	{
-		$zl_route['script'] = $scriptRoot . $nextSeg . ".php";
-		$zl_route['logic'] = "direct relation";
-	}
-	else //for multidimensional heirarchy
-	{
-		$zl_route['script'] = $scriptRoot;
-		for($i = 0; $i < $scriptFolders; $i++) { $zl_route['script'] .= $nextSeg . "/"; }
-		$zl_route['script'] .= '.php';
-		$zl_route['logic'] = "folder relation";
-	}
-}
-else
-{
-	$zl_route['script'] = $scriptRoot . $scriptHome . ".php";
-	$zl_route['logic'] = "home route";
-}
-
-$zl_route['action'] = $url; //the remnant is 'action' for the script to interpret in it's own fashion.
-
-//responding to a bad route
-function zl_badController($url, $routeData = "")
-{
-	ztime::stopTimer("zl_router");
-	if(zl::$set['debugLevel'] > 0)
-	{
-		zl::faultUser("Invalid Address: " . $url . "<br>" . "Attempted script: " . $routeData['script'] . "<br>Logic: " . $routeData['logic']);
-	}
-	else { zl::faultUser("Invalid Address: " . zfilter::stringSafe($url)); }
-}
-
-if(!file_exists($zl_route['script'])) { zl_badController($zl_route['origUrl'], $zl_route); }
-
-//remove temporary variables and git'r done.
-unset($skipFirstSegs, $scriptFolders, $scriptRoot, $scriptHome, $url);
-ztime::stopTimer("zl_router");
-require($zl_route['script']); //go time!
+        $sanitizedName = str_replace(['.md', "docs/"], '',$doc);
+        $titleArray = explode("_", $sanitizedName); //remove the ##_ part
+		array_shift($titleArray);
+        $title = str_replace("_", " ", ucfirst(implode("_", $titleArray)));
+        ?><a href="docs/md2html.php?md=<?=$sanitizedName?>"><?=$title?></a><br><?php
+    }
+	?>
+</div>
+</div>

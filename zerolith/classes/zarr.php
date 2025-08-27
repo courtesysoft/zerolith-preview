@@ -1,5 +1,5 @@
 <?php
-// zerolith [Beta] Arrays Library - (c)2021 Courtesy Software
+// zerolith [Beta] Arrays Library
 class zarr
 {
 	private static $pipeDe = "|";   //pipe delimiter
@@ -409,7 +409,7 @@ class zarr
 	{
 		//initialized data
 		if(zs::containsCase($fieldOrder, "|")) { $fieldOrder = self::dePipe($fieldOrder); }
-		else{ $fieldOrder = explode(",", $fieldOrder); } //CS uses this style
+		else{ $fieldOrder = explode(",", $fieldOrder); } //pom uses this style
 		$parseResult = array("result" => true, "data" => array(), "msg" => "", "count" => 0);
 		$resultArray = [];
 		

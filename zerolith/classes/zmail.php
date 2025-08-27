@@ -1,13 +1,12 @@
 <?php
-// Zerolith Email Library - (c)2022 Courtesy Software
+// Zerolith Email Library
 // v0.4  - 12/24/2022 semi-functional - only mail() works.
 // v1.40 - 01/20/2023 completed new design with consolidated tables.
-// v1.50 - perform final testing
+// v1.50 - needs final testing - incomplete
 
 //Todo: Backport better debugging and dev email forwarding from other library
 //Todo: Make PHPmailer debug only run on failure
 //Todo: New email queue runner
-//Todo:
 //Todo: Timing data has problems, fix
 
 class zmail
@@ -18,32 +17,40 @@ class zmail
 	public static $dbMail = "zl_mail"; //email log table name
 	public static $dbUnsubscribed = "zl_mailUnsubscribed"; //email unsubscribed table name
 	private static $debugVoice = ['libraryName' => "zmail", 'micon' => "mail", 'textClass' => "zl_orange10", 'bgClass' => "zl_bgOrange1"];
-
-	//shortcuts for sending emails
-	public static function sendToOwner($subject, $message, $category = "owner")
+	
+	public static function init()
+	{
+		require(zl::$site['pathZerolithClasses'] . "3p/PHPMailer/PHPMailer.php");
+		require(zl::$site['pathZerolithClasses'] . "3p/PHPMailer/SMTP.php");
+		require(zl::$site['pathZerolithClasses'] . "3p/PHPMailer/Exception.php");
+	}
+	
+	//shortcuts for sending emails to users specified in config file
+	public static function sendToOwner($subject, $message, $category = "owner") 
 	{ return self::send(zl::$site['emailOwner'], 0, $subject, $message, $category); }
-	public static function sendToSupport($subject, $message, $category = "support")
+	public static function sendToSupport($subject, $message, $category = "support") 
 	{ return self::send(zl::$site['emailSupport'], 0, $subject, $message, $category); }
-	public static function sendToDebug($subject, $message, $category = "debug")
+	public static function sendToDebug($subject, $message, $category = "debug") 
 	{ return self::send(zl::$site['emailDebug'], 0, $subject, $message, $category); }
-
+	
 	//Sends an email immediately; reusing the array function.
-	//'to' can contain a piped list of multiple emails.
+	//'to' can contain a piped list of multiple email addresses.
+	//example:: sendLater('bob@gmail.com', 1234, 'your order is ready, 'bla bla' 'orders', 'system@yeehaw.com')
 	public static function send($to, $toUserID, $subject, $message, $category, $from = "", $replyto = "", $attachmentPath = "")
 	{
 		$result = self::sendArray([get_defined_vars()]); //straight pipe it
-		return ($result['success'] == 1);
+		return ($result['success'] == 1); 
 	}
 
     //Queues an individual email, for use with large batches of emails where mail sending waits are unacceptable.
-	//Processed by zerolith/zl_internal/cron/runMailQueue.php via cron.
-	//'to' can be a piped list.
+	//Processed by runMailQueue.php via cron.
+	//same syntax as above
     public static function sendLater($to, $toUserID, $subject, $message, $category, $from = "", $replyto = "", $attachmentPath = "")
     {
 		ztime::startTimer("zl_mailQueue");
         $toFiltered = self::filterEmailAddresses($to);
 
-		if(zs::isBlank($from)) { $from = zl::$site['emailSupport']; }
+		if(zs::isBlank($from)) { $from = zl::$site['emailSupport']; } //default
 		if(zs::isBlank($replyto)) { $replyto = $from; }
 
 		//form write array from input
@@ -83,10 +90,10 @@ class zmail
         {
 			ztime::startTimer("zl_mail"); //timer will be stopped by writeMailStatus()
 
-	        //came from the database but not marked as 'sending'; possible desync in emailQueue sending
+	        //came from the database but not marked as 'sending'; possible desync in emailQueue sending, handle it
 			if(isset($email['ID']) && $email['status'] == "sending")
 			{
-				zl::fault("Stored email was sent to sendArray but didn't have a status of 'sending'; bombing to prevent unintended emails from being sent from the queue.");
+				zl::fault("Queued email was sent to sendArray but didn't have 'sending' status; bombing to prevent unintended emails from being sent from the queue.");
 			}
 			
 			//immediately fail on this one.
@@ -130,7 +137,7 @@ class zmail
 			}
 			
 			//ok, let's actually do it!
-
+	        
 	        //auto-set these values if missing.
 	        zs::ifBlankFill($email['from'], zl::$site['emailSupport']);
 			zs::ifBlankFill($email['replyto'], $email['from']);
@@ -144,7 +151,7 @@ class zmail
 			}
 			$PM->Subject = $email['subject'];
 
-            if(strpos($email['message'], "<") !== FALSE) //world's fastest HTML detection
+            if(strpos($email['message'], "<") !== FALSE) //world's fastest and worst HTML detection
             {
 				$PM->ContentType = 'text/html'; $PM->IsHTML(true);
 				$PM->Body = self::$header['html'] . $email['message'] . self::$footer['html'];
@@ -160,15 +167,15 @@ class zmail
 			{
 				ob_start(); //start the PHPmailer error output capture
 				if(!$PM->send())
-	            {
-	                sleep(1); //retry!
-	                if(!$PM->send())
-	                {
+				{
+					sleep(1); //retry!
+					if(!$PM->send())
+					{
 						//fill the error data we're about to write.
 						$email['resultData'] = "[fail]<br><br>PHPmailer data:<br>" . ob_get_clean();
 						$email['status'] = "failed";
-	                }
-	            }
+					}
+				}
 			}
 			else //mail was off so let's leave a note.
 			{ $email['resultData'] = "[success] zmail turned off; email marked as successful."; }
@@ -211,13 +218,13 @@ class zmail
 	}
 
 	//return a standard phpmailer object
-	//not efficient, but effectively fully resets the class
+	//not efficient, but effectively fully refreshes the class
 	private static function getPmail()
 	{
-		require_once(zl_frameworkPath . "classes/3p/PHPMailer/class.phpmailer.php");
-		$PM = new PHPMailer(); $PM->isSMTP();
+		$PM = new PHPMailer\PHPMailer\PHPMailer(true);
+		$PM->isSMTP();
 
-		if(self::$debug && zl::$set['debugLevel'] > 2) { $PM->SMTPDebug = 2; } else { $PM->SMTPDebug = 0; }
+		if(self::$debug && zl::$set['debugLevel'] > 3) { $PM->SMTPDebug = zl::$set['debugLevel'] -2; } else { $PM->SMTPDebug = 0; }
 
 		$PM->Username      = zl::$set['mailUser'];      $PM->Password = zl::$set['mailPass'];
 		$PM->Host          = zl::$set['mailHost'];      $PM->Port     = zl::$set['mailPort'];
@@ -294,9 +301,9 @@ class zmail
 	//------ higher level & other functions -------
 
 
-	//return a flat list of unsubscribed users, specific
+	//return a flat list of unsubscribed users, pom specific
 	public static function getUnsubscribedList()
-	{ return array_column(getArray("SELECT * FROM " . self::$dbUnsubscribed), "address"); }
+	{ return array_column(zdb::getArray("SELECT * FROM " . self::$dbUnsubscribed), "address"); }
 
 	//not used
 	//extract emails from customer raw db array output containing user data
@@ -348,4 +355,6 @@ class zmail
 		return ["emailArray" => $emailArray, "resultTotals" => $resultCount];
 	}
 }
+
+zmail::init(); //initialize and load phpmailer
 ?>

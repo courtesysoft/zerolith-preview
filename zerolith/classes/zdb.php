@@ -3,46 +3,48 @@
 // 06/2021 - refactored db3 to static class and added database switching
 // 12/2022 - fixed float bug and improved error detection in writeRow::
 // 01/2023 - started safe read functions
-// 02/2023 - added tickmarks to fields like `fieldname` so that keys with mysql reserved keywords ( there's lots of them ) don't bomb.
+// 02/2023 - added tickmarks to fields like `fieldname` so that keys with mysql reserved keywords ( there's lots of them in our apps apparently ) don't bomb.
 // 05/2023 - added in-memory SQL cache.
 // 12-2023 - fixed edge case in writeRow where writing a string with leading zeros results in the zeros being removed and being converted to an integer on write
 
 //TODO: Implement automatic handling of SQL keywords like NOW() when sent as a string. writeRow() and other parameterized functions need this.
-//TODO: Implement safe read functions, starting with getFieldSafe
-//TODO: Implement disk cache; should be able to use json ( built into PHP ), simdjson ( 3x faster json ) igbinary ( extension, smallest data )
 //TODO: Implement memory cache size count when debuglevel = 4
-//TODO: Experiment with / implement mysqli persistent connections to remove per-instance overhead: https://www.php.net/manual/en/mysqli.persistconns.php
+//TODO: Experiment with / implement mysqli persistent connections to remove per-instance overhead: https://www.php.net/manual/en/mysqli.persistconns.php, can save .5ms on boot ( it's free CPU )
+//TODO: implement async mysql calls
 
-//How gnat does it ( from conversation 07/25/2023 )
-//So one way I'm a fan of. Have a unified key/value API for cache that checks these for your SQL query in the following order:
-//RAM (for repeated reads, basically)
-//Memcached or redis or sqlite.
-//Finally, database.
-//Can just be 2-3 functions. cache_read() cache_write() cache_update() ...
+//Working POC of async mysql calls ( tested 12/11/2024 - DS )
+//https://github.com/derfl0/AsyncDBPool/blob/master/README.md
 
 class zdb
 {
 	public static $returnErrors = false;    //Return error as FALSE instead of exiting. Be very careful about toggling this frequently!
+	
+	//to implement
+	public static $safeShortcuts = true;    //Convert various SQL keywords to their equivalent SQL keywords instead of values
+
 	private static $db = 1;                 //Default database number
 	private static $connections = [];       //The array of available connections.
 	private static $debugVoice = ['libraryName' => "zdb", 'micon' => "storage", 'textClass' => "zl_linkDark", 'bgClass' => 'zl_bgLinkLight'];
-	
 	private static $cachedCall = false;     //internal toggled flag - used to enable the cached versions of calls
 	private static $cachedCallUsed = false; //if cached call has been used, unset cached data when manual SQL call made
 	private static $SQLCacheUnsafe = [];    //associative array for unsafe SQL cache; [Literal SQL call => SQL output data]
-	private static $SQLCacheSafe = [];      //associative array for safe command SQL cache; [JSON representation of call => SQL output data]
 	
+	//not implemented yet
+	private static $SQLCacheSafe = [];      //associative array for safe command SQL cache; [array representation of call => SQL output data]
+
     public static function __init() { self::connectionOpen(zl::$set['dbDefault']); }
-    
-	
+
+
 	// ------- Most Common Calls -------
 	
 	//toggle the active database.
     public static function useDB($useDB = "")
     {
-		if(!isset(self::$connections[$useDB])) { self::connectionOpen($useDB); }
-		else { self::$db = $useDB; }
+		if(!isset(self::$connections[$useDB])) { self::connectionOpen($useDB); } else { self::$db = $useDB; }
 	}
+	
+	//return the current database number
+	public static function currentDB(){ return self::$db; }
 	
 	//return the mysql equivalent of now()
 	public static function now() { return date('Y-m-d G:i:s'); }
@@ -110,10 +112,10 @@ class zdb
 				else if($isn)
 				{
 					//this prevents an edge case where  01234 internally converts to an int (1234) when it should be a string (01234).
-					if(is_string($value) && substr($value, 0, 1) == "0" && strlen($value >= 1)) { $sqlTypes .= "s"; }
-					else { $sqlTypes .= "i"; }
+					if(is_string($value) && substr($value, 0, 1) == "0" && strlen($value) >= 1) { $sqlTypes .= "s"; }
+					else { $sqlTypes .= "i"; } //integer
 				}
-				else { $sqlTypes .= "s"; }
+				else { $sqlTypes .= "s"; } //string
             }
 			
             $keyList = trim($keyList, ", "); //clean up..
@@ -133,7 +135,7 @@ class zdb
 				//safety check
 	            if(zs::isBlank($whereArray))
 				{
-					self::fault($failMsg, "\nzdp::writeRow() was given an UPDATE or DELETE mode with a blank whereArray. This can result in an unintended update of all rows");
+					self::fault($failMsg, "\nzdb::writeRow() was given an UPDATE or DELETE mode with a blank whereArray. This can result in an unintended update of all rows");
 				}
 				
                 $whereString = " WHERE "; $multiWhere = false;
@@ -221,47 +223,200 @@ class zdb
         }
     }
 	
-	// untested --v
-	// Return a string from a single column SQL request, but with SQL injection prevention
-	// Behavior: Halt program on database access error, halt program if output is blank and faultOnBlank = true
-    public static function getFieldSafe($SQL, $valuesInOrder = [], $failMsg = "Database Error")
-    {
-		ztime::startTimer("zl_db_read"); $sqlTypes = "";
-		
-		//unequal ? and valuesInOrder sent?
-		if(substr_count($SQL, "?") != count($valuesInOrder)) { self::fault("unequal number of values to ? sent!"); return false; }
-  
-		//formulate types string
-		foreach($valuesInOrder as $value)
-        { if(is_float($value)) { $sqlTypes .= 'd'; } else if(is_numeric($value)) { $sqlTypes .= 'i'; } else { $sqlTypes .= 's'; } }
-		
-		$mp = mysqli_prepare(self::$connections[self::$db], $SQL);
-        if($mp === 1) //handle incorrect binding.
-        {
-			$stmtError = "zdb: The sql parameters could not be bound.\n";
-            $stmtError .= "\nsqlTypes:\n" . zs::pr($sqlTypes) . "\n" . "\nsql:\n" . $SQL . "\n\n";
-        	self::fault($failMsg, $stmtError); return false;
-        }
-		
-		//binding parameters
-		if(@!call_user_func_array('mysqli_stmt_bind_param', array_merge(array($mp, $sqlTypes), array_values($valuesInOrder))))
-        {
-			self::fault($failMsg, "\nzdb::getFieldSafe() Binding failure\nSQL was: " . $SQL . "\nSQL bindvars:\n" . zs::pr($valuesInOrder) . "\nMySQL Error: " . zs::pr(mysqli_error(self::$connections[self::$db])) . "\n"); return false;
-        }
-		
-		if($mp->execute())
+	// prepares and executes a MySQL SELECT using prepared statement, prevents SQL injection
+	// use the wrapper functions: getFieldSafe() / getRowSafe() / getArraySafe() instead of calling this function directly
+	private static function handleGetSafe(string $getType, string $SQL, array $boundParams = [], array $options = [])
+	{
+		$defaults = [
+			'failMsg' => "Database Error",
+			'faultOnBlank' => false
+		];
+		$options = array_merge($defaults, $options);
+
+		$conn = self::$connections[self::$db]; // saves typing
+
+		if (!$conn)
 		{
-			$result = $mp->get_result();
-			$rows = zarr::first($result->fetch_assoc());
-			mysqli_free_result($mp);
-			self::log($rows);
-			return $rows;
+			self::fault($options['failMsg'], "zdb::handleGetSafe() There is no active MySQL connection");
+			return false;
 		}
-		else
+
+		// $getType must be one of these values
+		if (!in_array($getType, ['getArray', 'getRow', 'getField'], true))
 		{
-			self::fault($failMsg, "\nzdb::getFieldSafe() Statement Execute failure\nSQL was: " . $SQL . "\nSQL bindvars:\n" . zs::pr($valuesInOrder) . "\nMySQL Error: " . zs::pr(mysqli_error(self::$connections[self::$db])) . "\n"); return false;
+			self::fault($options['failMsg'], "zdb::handleGetSafe() Invalid type passed to handleGetSafe(): $getType");
+			return false;
 		}
-    }
+
+		ztime::startTimer("zl_db_read");
+
+		// prepare statement
+		$stmt = $conn->prepare($SQL);
+		if (!$stmt)
+		{
+			self::fault($options['failMsg'], "zdb::handleGetSafe() Statement preparation failed: ".$conn->error);
+			return false;
+		}
+
+		// bind parameters if any
+        if (!empty($boundParams))
+		{
+            // dynamically create the type string for bind_param
+			// example: $stmt->bind_param('iss', [2, 'Alice', 'foo@example.com']);
+			// the 'iss' string here is the MySQL type string that signify: i-integer, s-string, s-string, in that order
+            $typeStr = "";
+            foreach ($boundParams as $param)
+			{
+                if (is_int($param)) { $typeStr .= "i"; } // integer
+				elseif (is_double($param)) { $typeStr .= "d"; } // double/float
+				elseif (is_string($param)) { $typeStr .= "s"; } // string
+				else { $typeStr .= "b"; } // blob or other
+            }
+			// bind parameters
+			$stmt->bind_param($typeStr, ...$boundParams);
+		}
+		
+		// execute
+		$stmt->execute();
+        if ($stmt->errno)
+		{
+            self::fault($options['failMsg'], "zdb::handleGetSafe() Failed to execute statement: " . $stmt->error);
+			return false;
+        }
+
+        // get the result
+        $result = $stmt->get_result();
+        if (!$result)
+		{
+            self::fault($options['failMsg'], "zdb::handleGetSafe() Failed to get result: " . $stmt->error);
+			return false;
+        }
+
+        // fetch all rows as an associative array
+        $rows = $result->fetch_all(MYSQLI_ASSOC);
+		$returnVal = [];
+
+		if (!$rows) // empty result
+		{
+			if ($options['faultOnBlank'])
+			{
+				self::fault($options['failMsg'], "zdb::handleGetSafe() Fault on blank");
+				return false;
+			}
+
+			// sets the default value to return on empty result
+			// on getArray and getRow, this would be an empty array
+			// on getField, this would be an empty string
+			if ($getType === 'getField') { $returnVal = '';}
+			elseif ($getType === 'getRow' || $getType === 'getArray') { $returnVal = []; }
+		}
+		else // has result
+		{
+			if ($getType === 'getField')
+			{
+				// on an associative array like:
+				// $arr = ['banana' => 'yellow', 'apple' => 'red'];
+				// echo reset($arr); // will print out 'yellow'
+				$returnVal = reset($rows[0]);
+			}
+			elseif ($getType === 'getRow') { $returnVal = $rows[0]; }
+			elseif ($getType === 'getArray') { $returnVal = $rows; }
+		}
+
+
+		$result->free(); // free up the result
+        $stmt->close(); // close the statement
+
+		// for debugging purpose
+		if(zl::$set['debugLevel'] > 2 || zl::$set['debugLog'] || zl::$set['debugLogOnFault'])
+		{
+
+			if (!empty($boundParams))
+			{
+				// simulate the final query, to try to estimate what the query looks like after params had been bound to it
+				// (for visualization only, this is not exactly the query that MySQL had prepared and executed (we can't access this))
+				$escapedParams = [];
+				foreach ($boundParams as $idx => $param)
+				{
+					$type = $typeStr[$idx];
+					if ($type === 'i' || $type === 'd') { $escapedParams[] = $param; } // no special treatment for integer, float, double
+					else
+					{
+						// since this is just for debugging/visualization purpose,
+						// using addslashes is enough (instead of mysqli_real_escape_string)
+						$escapedParams[] = "'". addslashes($param) ."'";
+					}
+				}
+				// to simulate the final query correctly, we need to differentiate the question marks in the query
+				// ? (placeholder): these will be replaced with boundParams, in order of their index in the array
+				// ? (literal): these should be left as they are (eg. the question marks in: WHERE greeting = 'How are you??')
+				// we do that by checking whether a question mark is in quote (literal) or not (actual placeholder)
+				$i = 0;
+				$simulatedQuery = '';
+				$inQuote = false;
+
+				// iterate through each character to handle question marks correctly
+				for ($pos = 0; $pos < strlen($SQL); $pos++)
+				{
+					$char = $SQL[$pos];
+
+					if ($char === "'" && ($pos === 0 || $SQL[$pos - 1] !== '\\')) { $inQuote = !$inQuote; }
+
+					if ($char === '?' && !$inQuote) { $simulatedQuery .= isset($escapedParams[$i]) ? $escapedParams[$i++] : '?'; }  // replace placeholder with escaped param
+					else { $simulatedQuery .= $char; }
+				}
+			}
+			else { $simulatedQuery = $SQL; } // no bound params detected, the final query is unchanged
+
+			// log it
+			self::log(
+				"Query executed (approximation only, the exact query isn't retrievable):
+				\n$simulatedQuery
+				\nQuery result:
+				\n". print_r($returnVal, true)
+			);
+
+		}
+		else { self::log(); }
+
+        return $returnVal;
+	}
+
+	// execute a prepared statement and fetch all the rows
+	// returns an array of associative arrays on success, an empty array on no result, or false on failure
+	// halt program if output is empty and faultOnBlank = true
+	public static function getArraySafe(string $SQL, array $boundParams = [], string $failMsg = "Database Error", bool $faultOnBlank = false)
+	{
+		$options = [
+			'failMsg' => $failMsg,
+			'faultOnBlank' => $faultOnBlank
+		];
+		return self::handleGetSafe('getArray', $SQL, $boundParams, $options);
+	}
+	// execute a prepared statement and fetch the first row
+	// returns an associative array on success, an empty array on no result, or false on failure
+	// halt program if output is empty and faultOnBlank = true
+	public static function getRowSafe(string $SQL, array $boundParams = [], string $failMsg = "Database Error", bool $faultOnBlank = false)
+	{
+		$options = [
+			'failMsg' => $failMsg,
+			'faultOnBlank' => $faultOnBlank
+		];
+		return self::handleGetSafe('getRow', $SQL, $boundParams, $options);
+
+	}
+	// execute a prepared statement and fetch only the first cell on the first row
+	// returns a string on success, an empty string on no result, or false on failure
+	// halt program if output is empty and faultOnBlank = true
+	public static function getFieldSafe(string $SQL, array $boundParams = [], string $failMsg = "Database Error", bool $faultOnBlank = false)
+	{
+		$options = [
+			'failMsg' => $failMsg,
+			'faultOnBlank' => $faultOnBlank
+		];
+		return self::handleGetSafe('getField', $SQL, $boundParams, $options);
+	}
+
 	
 	// Return a string from a single column SQL request.
 	// Behavior: Halt program on database access error, halt program if output is blank and faultOnBlank = true
@@ -321,7 +476,7 @@ class zdb
 		return $rData;
     }
 	
-    // Returns an array of all of the rows of data.
+    // Returns a multiAssoc array of all of the rows of data.
 	// Behavior: Halt program on database access error, halt program if output is blank and faultOnBlank = true
     public static function getArray($SQL, $failMsg = "Database Error", $faultOnBlank = false)
     {
@@ -347,6 +502,25 @@ class zdb
 		self::$cachedCall = false; //turn off marker immediately
         return $outArray;
     }
+	
+	//wrapper for getArray that returns the array as a numbered array, for cases where you have 1 key coming out of the query
+	public static function getArrayFlat($SQL, $failMsg = "Database Error", $faultOnBlank = false)
+	{
+		$resultArray = self::getArray($SQL, $failMsg, $faultOnBlank);
+		
+		//does array match what we expect? ( 1 key in output )
+		$arrayInfo = zarr::getArrayInfo($resultArray, true);
+		if($arrayInfo['allKeysWidth'] != 1)
+		{
+			self::fault($failMsg, "zarr::getArrayFlat() was sent data from MySQL that had more than 1 associative key.");
+		}
+		else
+		{
+			$flatArray = [];
+			foreach($resultArray as $result) { $flatArray[] = $result[$arrayInfo['allKeys'][0]]; }
+			return $flatArray; //and we're done!
+		}
+	}
 	
 	//in-memory cache variants of regular database commands.
 	public static function getFieldMem($SQL, $failMsg = "Database Error", $faultOnBlank = false)
@@ -520,7 +694,9 @@ class zdb
 		self::log(false,false, ["MySQLError" => $MySQLError, "userMsg" => $userMsg]);
 		
 		//if return errors is on, don't die; the next command in the library will return false.
-		if(self::$returnErrors) { zl::faultSoft($userMsg); return false; } else { zl::fault($userMsg); }
+		if(self::$returnErrors) { zl::faultSoft($userMsg, $MySQLError); return false; }
+		else
+		{ zl::fault($userMsg, $MySQLError . "    " . print_r(debug_backtrace(0,2)[1], true)); }
 	}
 	
 	//open a database connection if not present.

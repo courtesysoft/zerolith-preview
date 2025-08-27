@@ -1,0 +1,236 @@
+/* Blue Dimension theme - circa 01/2021 */
+
+/* load the desired palette. */
+@import url(/zerolith/public/zl_paletteMaterialPlus.css);
+
+/* Load your fonts here. */
+@font-face
+{
+  font-family: 'inter';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('/zerolith/public/3p/intervar.woff2') format('woff2');
+  font-named-instance: 'Regular';
+}
+
+@font-face
+{
+  font-family: 'inter';
+  font-style: italic;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('/zerolith/public/3p/intervaritalic.woff2') format('woff2');
+  font-named-instance: 'Italic';
+}
+
+@font-face /* IDE-like <pre> look for debugger */
+{
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/zerolith/public/3p/SourceCodePro.ttf') format('ttf');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+pre { font-family: 'Source Code Pro', monospace !important; }
+
+/* variables for the entire theme */
+:root
+{
+	/* Your theme colors */
+
+	--zl_white:        #FFF;
+	--zl_whiteDark:    #F7F7F7;  /* alt TD color */
+	--zl_whiteDarkDark:#F1F1F1;  /* alt TD color */
+	--zl_greyLight:    #E9E9E9;  /* TD left border */
+	--zl_grey:         #CACACA;  /* TD top border */
+	--zl_greyDark:     #AFAFAF;
+	--zl_blackLight:   #777;     /* General text color */
+	--zl_black:        #444;     /* General text color */
+	--zl_blackDark:    #000;     /* Jet black */
+
+	--zl_linkLight:    #dce9f9;
+	--zl_link:         #7a9acb;
+	--zl_linkMid:      #85A5D9;
+	--zl_linkDark:     #3264af;
+	--zl_linkDarkDark: #2555af; /* for lower TH gradient */
+
+	--zl_th:           #7a9acb;
+	--zl_thDark:       #3264af;
+	--zl_thDarkDark:   #2555af;
+	--zl_thText:       var(--zl_white);
+
+	--zl_accentLight:  var(--amber1);
+	--zl_accent:       var(--amber2);
+	--zl_accentMid:    var(--amber5);
+	--zl_accentDark:   var(--yellow9);
+	--zl_accentDarkDark:var(--amber10);
+
+	--zl_accent2Light: var(--brown1);
+	--zl_accent2:      var(--brown2);
+	--zl_accent2Mid:   var(--brown5);
+	--zl_accent2Dark:  var(--brown7);
+	--zl_accent2DarkDark:var(--brown9);
+
+	--zl_accent3Light: var(--purpleDeep1);
+	--zl_accent3:      var(--purpleDeep2);
+	--zl_accent3Mid:   var(--purpleDeep5);
+	--zl_accent3Dark:  var(--purpleDeep7);
+	--zl_accent3DarkDark:var(--purpleDeep9);
+
+	/* Yellow warn message */
+	--zl_warnLight:    var(--yellow2);
+	--zl_warn:         var(--yellow3);
+	--zl_warnMid:      var(--yellow5);
+	--zl_warnDark:     var(--yellow9);
+	--zl_warnDarkDark: var(--yellow10);
+
+	/* Red err message */
+	--zl_errLight:   hsl(355, 90%, 95%);
+	--zl_err:        var(--red3);
+	--zl_errMid:     var(--deepOrange4);
+	--zl_errDark:    var(--red7);
+	--zl_errDarkDark:var(--red8);
+
+	/* Green ok message */
+	--zl_okLight:      hsl(124, 37%, 90%);
+	--zl_ok:           var(--green3);
+	--zl_okMid:        var(--greenLight4);
+	--zl_okDark:       var(--green7);
+	--zl_okDarkDark:   var(--green8);
+
+	/* Fades */
+
+	--zl_fadeB90:  rgba(0,0,0,.9);
+	--zl_fadeB75:  rgba(0,0,0,.75);
+	--zl_fadeB66:  rgba(0,0,0,.66);
+	--zl_fadeB50:  rgba(0,0,0,.5);
+	--zl_fadeB33:  rgba(0,0,0,.33);
+	--zl_fadeB25:  rgba(0,0,0,.25);
+	--zl_fadeB17:  rgba(0,0,0,.17);
+	--zl_fadeB10:  rgba(0,0,0,.10);
+	--zl_fadeB7:   rgba(0,0,0,.075);
+	--zl_fadeB5:   rgba(0,0,0,.05);
+	--zl_fadeB0:   rgba(0,0,0,0);
+
+	--zl_fadeW90:  rgba(255,255,255,.9);
+	--zl_fadeW75:  rgba(255,255,255,.75);
+	--zl_fadeW66:  rgba(255,255,255,.66);
+	--zl_fadeW50:  rgba(255,255,255,.5);
+	--zl_fadeW33:  rgba(255,255,255,.33);
+	--zl_fadeW25:  rgba(255,255,255,.25);
+	--zl_fadeW17:  rgba(255,255,255,.17);
+	--zl_fadeW10:  rgba(255,255,255,.1);
+	--zl_fadeW7:   rgba(255,255,255,.075);
+	--zl_fadeW5:   rgba(255,255,255,.05);
+	--zl_fadeW0:   rgba(255,255,255,0);
+
+	/* Font Definitions. */
+
+	--zl_fontFace:  inter;
+	--zl_fontBoldWeight: 600;
+	--zl_fontPre:   12px; /* for code sections. */
+	--zl_linkWeight:600;  /* default weight of links */
+	--zl_font1:     13px; /* small tag */
+	--zl_font2:     15px;
+	--zl_font3:     16px; /* default text size */
+	--zl_font4:     18px; /* H3 */
+	--zl_font5:     24px; /* H2 */
+	--zl_font6:     32px; /* H1 */
+	--zl_font:      var(--zl_font3); /* default font size */
+
+	/* Spacing - defines padding and border radii */
+	--zl_spc0:  0px; /* leave this at 0px! */
+	--zl_spc1:  3px;
+	--zl_spc2:  5px;
+	--zl_spc3:  7px;
+	--zl_spc4:  10px;
+	--zl_spc5:  20px;
+	--zl_spc6:  30px;
+	--zl_rad: 3px; /* default radius for items unless otherwise set to one of the spc sizes */
+	--zl_spc: var(--zl_spc3); /* default space */
+
+	/* precalculate negative margin values */
+	--zl_spc-1: calc(-1 * var(--zl_spc1));
+	--zl_spc-2: calc(-1 * var(--zl_spc2));
+	--zl_spc-3: calc(-1 * var(--zl_spc3));
+	--zl_spc-4: calc(-1 * var(--zl_spc4));
+	--zl_spc-5: calc(-1 * var(--zl_spc5));
+	--zl_spc-6: calc(-1 * var(--zl_spc6));
+
+	/* Misc */
+
+	--zl_iconSize:          18px;
+	--zl_miconSize:         24px;
+	--zl_hoverDark:         1.2;
+	--zl_pageBGcolor:       #F4F4F4;
+	--zl_siteBGcolor:       var(--zl_grey);
+	--zl_sideNavWidth:      185px;
+	--zl_siteMaxWidth:      1300px;
+}
+
+/* Manually define hue shifts for Material 2 tone icons */
+/* Material Icon Reference: https://fonts.google.com/icons?selected=Material+Icons */
+
+.zlt_miconTT.tableNotify, .zlt_micon.tableNotify, .zlt_miconO.tableNotify     /* mini table notification icon */
+{ opacity:0.6; font-size:18px !important; }
+
+.zlt_miconTT.white, .zlt_micon.white, .zlt_miconO.white  /* white */
+{ filter: invert(0); font-size:1.4rem; }
+.zlt_miconTT.black, .zlt_micon.black, .zlt_miconO.black  /* black */
+{ filter: invert(0.25); font-size:1.4rem; }
+.zlt_miconTT.link, .zlt_micon.link, .zlt_miconO.link     /* blue */
+{ filter: invert(0.5) sepia(1) saturate(100) hue-rotate(200deg); font-size:1.4rem; }
+.zlt_miconTT.err, .zlt_micon.err, .zlt_miconO.err  /* orangered */
+{ filter: invert(0.5) sepia(1) saturate(100) hue-rotate(10deg); font-size:1.4rem; }
+.zlt_miconTT.ok, .zlt_micon.ok, .zlt_miconO.ok           /* green */
+{ filter: invert(0.5) sepia(1) saturate(100) hue-rotate(110deg); font-size:1.4rem; }
+.zlt_miconTT.warn, .zlt_micon.warn, .zlt_miconO.warn     /* yellow/orange */
+{ filter: invert(0.5) sepia(1) saturate(100) hue-rotate(54deg) brightness(2.75); font-size:1.4rem; }
+
+
+/* HTMX Visuals */
+
+.htmx-request /* point at target div to replace to get a fadey effect when the network is busy grabbing */
+{
+	filter:saturate(0.4);
+	opacity:0.4;
+	transition: all 1.25s ease-in;
+}
+
+.htmx-fade-out
+{
+  opacity: 0.5;
+  filter:saturate(0.33);
+  transition: all 0.75s;
+}
+
+.htmx-spinner-container
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	margin: auto;
+}
+
+@keyframes fadeIn { 0% { opacity: 0; } 25% { opacity: 0; } 100% { opacity: 1; } }
+
+.htmx-spinner
+{
+	position:absolute;
+	left:0;
+	bottom:0;
+	min-height:20px;
+	max-height:50px;
+	height:100%;
+	animation: fadeIn 1s;
+	ba1ckground-color:rgba(128,128,255, 0.5);
+}
+
+.htmx-spinner img
+{
+	opacity:1 !important;
+	z-index:9999;
+}

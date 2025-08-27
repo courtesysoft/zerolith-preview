@@ -6,7 +6,7 @@
 ///_______ \___  >__|   \____/|____/__||__| |___|  /
 //        \/   \/                                \/
 //
-//ZL UI Class v1.3 - (c)2023 Courtesy Software
+//ZL UI Class v1.5
 //09/2020 - started.
 //06/2021 - removed dependency on ZL framework, added autogeneration of IDs, major cleanup
 //01/2022 - Redesigned and readded ZL dependency for syntax ease.
@@ -18,10 +18,19 @@
 //			Jodit integration, cleaner auto-generation of IDs when needed
 //07/2023 - Added zvalid messages
 //08/2023 - Added R ( return ) variant for more items
+//03/2024 - Updated printTable2 to support $showfields and $THfieldClasses like ZPTA
+//10/2024 - Merged printTable1/2, allow sending |disabled to selectbox to indicate the selection is disabled
+//03/2025 - Added image selectbox beta
+
+//Design notes:
+//Parameter order for all functions should be:
+//[ Required parameters relative to the function ] [ extraClasses/extraHTML ] [ rare parameters ]
+
+//TODO: remove generateID() when it's not needed.
 
 class zui
 {
-	private static $elementIDs = [];        //internal tracking of items. Internal DOM.
+	private static $elementIDs = [];        //internal tracking of items.
 	private static $formVars = [];          //internal list of form variables ( hint to zl )
 	
 	public static $lastIDreadMore = "";     //for coordination of zl::quipD sending quips to two buffers ( readmore ID clash )
@@ -48,7 +57,7 @@ class zui
         $_SESSION[self::$flashSess][$messageName] = ['msg' => $messageText, 'type' => $notifyCode];
 	}
 	
-	//write a message to the session to buffer this later
+	//read a message from the session
 	public static function flashRead($messageName = "")
 	{
 		if($messageName !== '') // display single flash message
@@ -68,16 +77,19 @@ class zui
 	}
 	
 	//if there was a validation error, output it's text and give it a javascript-identifiable class name.
+	//Not used yet
 	public static function validMSG($varName)
 	{
 		if(self::$showZvalidFail && !zs::isBlank(zfilter::$validateChecksFailed[$varName])) { ?><span class="zvalid_<?=$varName?> zl_err"><?=zfilter::$validateChecksFailed[$varName]?></span><?php }
 		if(self::$showZvalidSuccess && !zs::isBlank(zfilter::$validateChecksFailed[$varName])) { ?><span class="zvalid_<?=$varName?> zl_ok"><?=self::micon("check","","ok")?></span><?php }
 	}
-	
-	//produces a list of input variables produced by zui that can be sent to zfilter::array(). Currently unused
+
+	//produces a list of input variables produced by zui that can be sent to zfilter::array().
+	//Not used yet
 	public static function getFormVars() { return zarr::toPipe(self::$formVars); }
 	
 	//visual quip - only use for acceptably nerdy printouts!
+	//send any data format into the $quip field and it should work!
 	public static function quip($quip = "", $title = "Information", $micon = "message")
 	{
 		if($micon == "pest_control") { $class = " error"; } else { $class = ""; }
@@ -87,10 +99,16 @@ class zui
 		echo $html;
 	}
 	
-	//cut the text after
+	//Cut the text after x characters and/or lines
 	public static function readMore($text, $charLimit = 512, $lineLimit = 7, $dotdotdot = "...")
 	{
+		$maxLimit = 2097152; //2mb sanity limit
+		
 		$strlen = mb_strlen($text);
+		
+		//if the string is over limit, pre-truncate it for compoutational sanity
+		if($strlen > $maxLimit) { $text = mb_substr($text,0, $maxLimit) . "/n/<br>ZL truncated the remaining text because the input string was " . ( znum::bytesToUnits($strlen)); }
+		
 		$lineCount = mb_substr_count($text, "\n");
 		if($lineCount <= $lineLimit && $strlen <= $charLimit) { return $text; } //below our limits.
 		else
@@ -131,31 +149,10 @@ class zui
 	//handle a fault in this class the way this class thinks.. visually!
 	private static function fault($reason = "unspecified") { self::notify("error","<b>zui: </b>".$reason); }
 	
-	//DEPRECATED! 01/2024 - DS
-	//Produce an arbitrary number of columns based on dynamic input.
-	//Example: 2 columns: "someExtraClass", $col1HTML, $col1Classes, $col2HTML, $col2Classes
-	//$classes determine width or other zl shorthand parameters
-	//$behavior determines the collapsing behavior  on small screens eg mobile devices.
-	public static function columns($wrapperClass = "", ...$columnData)
-	{
-		$columnCount = count($columnData);
-		if($columnCount & 1 || $columnCount == 0) //& is bitwise for 'odd'.
-		{ self::fault("Incorrect no. of column parameters (" . $columnCount . ")."); }
-		else
-		{
-			?>
-			<div class="zlt_columns<?=self::zEC($wrapperClass)?>"><?php
-			for($i = 0; $i < $columnCount; $i +=2)
-			{ ?><div class="zlt_column<?=self::zEC($columnData[$i + 1])?>"><?=$columnData[$i]?></div> <?php }
-			?></div>
-			<?php
-		}
-	}
-	
 	// --------------------- HTML Elements --------------------- //
 	
-	/* output Google Icons. */
-	//variant codes: tt = twin tone, o = outlined version
+	/* Output Google Icons. */
+	//variant codes: tt = twin tone, o = outlined version, "" = default
 	public static function micon($miconName, $variantCode = "", $extraClasses = "", string $extraHTML = "", $toolTipText = "")
 	{
 		//compile micon string
@@ -164,10 +161,16 @@ class zui
 		if($toolTipText != "") { self::toolTip($miconText, $toolTipText); } //Fancy: supposedly no worky
 		else { echo $miconText; } //regular
 	}
-	
-	//make a button that doesn't submit - for use with JS.
+
+	//Make a button that doesn't submit - for use with JS.
+	//buttonTitle is the text label on the button.
+	//nameOverride sets a HTML form variable name. If left blank, it will use the buttonTitle
+	//micon is a google icon code
+	//extraClasses specifies any extra classes to add to the input element.
+	//extraHTML appends extra HTML to the end of the input element.
 	public static function buttonJS($buttonTitle, $nameOverride = "", $micon = "", $extraClasses = "", $extraHTML = "")
 	{
+		if($buttonTitle == "") { $extraClasses .= " iconOnly"; }
 		if($nameOverride != "") { $name = $nameOverride; } else { $name = $buttonTitle; } //name = $buttontitle by default
 		?>
 		<button type="button" class="zlt_button<?=self::zEC($extraClasses)?>" name="<?=$name?>"<?=self::zD()?><?=self::zEH($extraHTML)?>><?=self::zMI($micon)?><?=$buttonTitle?></button><?php
@@ -176,6 +179,7 @@ class zui
 	//make a button that submits a form.
 	public static function buttonSubmit($buttonTitle, $nameOverride = "", $micon = "", $extraClasses = "", $extraHTML = "")
 	{
+		if($buttonTitle == "") { $extraClasses .= " iconOnly"; }
 		if($nameOverride != "") { $name = $nameOverride; } else { $name = $buttonTitle; } //name = $buttontitle by default
 		self::$formVars[] = $name;
 		
@@ -186,14 +190,16 @@ class zui
 	//make a button that goes to a link ( cosmetic link button )
 	public static function buttonLink($buttonTitle, $link, $micon = "", $extraClasses = "", $extraHTML = "")
 	{
+		if($buttonTitle == "") { $extraClasses .= " iconOnly"; }
 		?>
 		<a href="<?=$link?>"><button class="zlt_button<?=self::zEC($extraClasses)?>"<?=self::zEH($extraHTML)?><?=self::zD()?>><?=self::zMI($micon)?><?=$buttonTitle?></button></a>
 		<?php
 	}
-	
-	//make a button that submits a form. Accepts an associative array of hidden fields.
+
+	//make a button that submits a form. Accepts an associative array of hidden fields; example: ['userID' => 1234, 'username' => 'bubba'].
 	public static function buttonForm($buttonTitle, array $hiddenFields, $nameOverride = "", $micon = "", $extraClasses = "", string $extraHTMLform = "", string $extraHTMLbutton = "")
 	{
+		if($buttonTitle == "") { $extraClasses .= " iconOnly"; }
 		if($nameOverride != "") { $bname = $nameOverride; } else { $bname = $buttonTitle; } //name = $buttontitle by default
 		?><form action="" method="post" class="zl_inline-block"<?=self::zEH($extraHTMLform)?>>
         <?php foreach($hiddenFields as $name => $value)
@@ -207,7 +213,12 @@ class zui
 	}
 	
 	//produce a checkbox.
+	//varName is the HTML form variable name.
+	//varValue is the default value, if there is one.
+	//labelText is text that comes after the checkbox.
 	//checkedIfValue makes the box checked if $varValue is this value.
+	//extraClasses specifies any extra classes to add to the input element.
+	//extraHTML appends extra HTML to the end of the input element.
     public static function checkBox($varName, $varValue, $labelText = "", $checkedIfValue = "Y", $extraClasses = "", $extraHTML = "")
     {
 		self::$formVars[] = $varName;
@@ -238,22 +249,68 @@ class zui
         </div>
 	    <?php
     }
-    
-	//Spits out a selectbox from an array
+
+	//WARNING: under construction
+	//Spits out a selectbox from an array, optionally allowing for images to be used inside.
 	//Setting $defaultItem to false will disable the default item
 	//Input array formats accepted:
 	//+ Keyless array ['Desiree Johnson', 'Jeff Warner'] uses the single value for code value AND readable name
 	//+ Flat associative array ['32' => 'Desiree Johnson', '33' => 'Jeff Warner'] (code value, readable name)
 	//+ 2 field DB array: [['ID' => '32', 'name' => 'Dee Johnson'], ['ID' => '33', 'name' => 'Jeff Warner']] (code value, readable name)
 	//+ 3 field DB array: [['ID' => '32', 'name' => 'Dee Johnson', 'avatar' => 'Dee.gif']], etc (code value, readable name, avatar)
-	public static function selectBox($varName, $varValue, $listArray = [], $defaultItem = "", $extraClasses = "", $extraHTML = "", $addHTMX = 'N')
+	//Note: if you send |disabled into an array item's value, it will print the item as disabled.
+	static function selectBox_new(string $name, string $value, array $listArray = [], string $defaultItem = '- none -', string $extraClasses = '', string $extraHTML = '')
+	{
+		?>
+		<zui-select name="<?= $name ?>" id="<?= $name ?>" class="<?= $extraClasses ?>" <?= self::zD() ?> <?= $extraHTML ?> hx-trigger="change">
+			<?php
+				if($defaultItem !== false) 
+				{ 
+					if(!$defaultItem) { $defaultItem = '- none -'; }
+					echo "<option value=''>$defaultItem</option>"; 
+				}
+
+				$arrayInfo = zarr::getArrayInfo($listArray, true);
+				$optionArray = [];
+				
+				// Reformat option data into a consistent format
+				if($arrayInfo['type'] == 'blank') {} // That was easy
+				elseif($arrayInfo['type'] == 'singleNum') 
+				{ foreach($listArray as $optionData) { $optionArray[$optionData] = [$optionData, '']; } } 
+				elseif($arrayInfo['type'] == 'singleAssoc') 
+				{ foreach($listArray as $optionValue => $optionData) { $optionArray[$optionValue] = [$optionData, '']; } } 
+				elseif(zs::contains($arrayInfo['type'], "multi"))
+				{ foreach($listArray as $optionData) { $optionArray[$optionData['ID']] = [$optionData['name'], @$optionData['avatar']]; } }
+				else
+				{ zl::fault('Invalid option data array type for zui::selectBox'); }
+				
+				// Output options from data
+				foreach($optionArray as $optionValue => [$optionLabel, $optionAvatar])
+				{
+					if(strlen($optionValue) > 9 && stripos($optionValue, '|disabled', -8) == 0) 
+					{
+						$disabled = 'disabled';
+						if($optionLabel == $optionValue) { $optionLabel = substr($optionValue, 0, -9); }
+						$optionValue = substr($optionValue, 0, -9);
+					}
+					else { $disabled = ''; }
+
+					if($optionValue == $value) { $selected = 'selected'; } else { $selected = ''; }
+					?><option value="<?= $optionValue ?>" data-icon="<?= $optionAvatar ?>" <?= $selected ?> <?= $disabled ?>><?= $optionLabel ?></option><?php
+				}
+			?>
+		</zui-select>
+		<?php
+	}
+
+	//same as above, but not as fancy
+	public static function selectBox($varName, $varValue, $listArray = [], $defaultItem = "", $extraClasses = "", $extraHTML = "")
 	{
 		//init
 		self::$formVars[] = $varName;
 		if(zs::isBlank($listArray)) { $listArray = ["" => ""]; } //produce a blank field..
 		if($defaultItem == "") { $defaultItem = "- none -"; } //set a name for the default value
-		$hasAvatars = false;
-		
+
 		//preprocess the types of arrays selectbox can use
 		$arrayInfo = zarr::getArrayInfo($listArray, true);
 		if ($arrayInfo['type'] == "singleAssoc") { }     //default flat associative array format, ie ["32" => "Dee Johnson"]
@@ -276,119 +333,47 @@ class zui
 			}
 			$listArray = $temp;
 		}
-		else if(zs::contains($arrayInfo['type'], "multi") && count($arrayInfo['allKeys']) == 3) //3 value (key, value, avatar) format
-		{
-			//force it into a 3 wide array format
-			$temp = [];
-			foreach ($listArray as $list)
-			{
-				$tempLet = [];
-				foreach ($list as $listLet) { $tempLet[] = $listLet; }
-				$temp[] = $tempLet;
-			}
-			$listArray = $temp;
-			
-			//$hasAvatars =false;
-			$hasAvatars = true;
-			zl::quipD($listArray);
-		}
 		else { } //this should be an error.
-		
-		//for triple select box
-		if($hasAvatars)
-		{
-			//var_dump($listArray); die();
-			$setfordd = '';
-			if ($addHTMX == 'Y') { $htmx = 'hx-get="?zpta=Y" hx-include="#searchBox,#orderBy" hx=trigger="change"'; }
-			else { $htmx = ''; }
-			?>
-			<div class="dropdown">
-			<div class="parent">
-				<div class="hideme" onclick="showElement('menu-id', true);">hiddendiv</div>
-				<img class="cm dropdown_avatar noTransition" id="mainAvatar" src="#" style="position:relative; display:none; margin-left: 3px; top:-20px; width:23px; height:23px; ">
-				<div class="child">
-					<select <?=$htmx?> name="clientID" id="clientID" class="zlt_i zlt_selectBox<?=self::zEC($extraClasses)?>" style="padding-left:27px !important;" onfocus="showElement('menu-id', true)" <?=self::zEH($extraHTML)?>>
-						<option value="">- none -</option>
-						
-						<?php
-						$foundItem = false;
-						foreach ($listArray as $list)
-						{
-							if(!$foundItem && $varValue == $list[0]) { $selected = " SELECTED"; $foundItem = true; }
-							else { $selected = ""; }
-							?>'
-							<option value="<?= $list[0] ?>"<?= $selected ?>><?= $list[1] ?></option><?php
-						}
-						?>
-					</select>
-				</div>
-			</div>
-			
-			<ul class="list" id="menu-id" tabindex="0" onmouseleave="showElement('menu-id', false)">
-			<?php
-		}
-		else
-		{
-			$setfordd = '';
-			?><select <?=$setfordd?> name="<?=$varName?>" class="zlt_i zlt_selectBox<?=self::zEC($extraClasses)?><?=self::zV($varName)?>"<?=self::zD() ?><?=self::zEH($extraHTML)?>><?php
-		}
-		
-		
+
+		?><select name="<?=$varName?>" class="zlt_i zlt_selectBox<?=self::zEC($extraClasses)?><?=self::zV($varName)?>"<?=self::zD() ?><?=self::zEH($extraHTML)?>><?php
+
 		//create the bottom list.
 		$foundItem = false;
 		$buf = "";
-		
-		if(!$hasAvatars) //iterate flat associative array
+
+		foreach ($listArray as $variableName => $humanName)
 		{
-			foreach ($listArray as $variableName => $humanName)
+			if (!$foundItem && $varValue == $variableName) { $selected = " SELECTED"; $foundItem = true; }
+			else { $selected = ""; }
+
+			//handle |disabled addon in human name
+			$disabled = "";
+			if(zs::containsCase($humanName, "|disabled"))
 			{
-				if (!$foundItem && $varValue == $variableName) { $selected = " SELECTED"; $foundItem = true; }
-				else { $selected = ""; }
-				$buf .= '<option value="' . $variableName . '"' . $selected . '>' . $humanName . "</option>\n";
+				$humanName = str_replace("|disabled", "", $humanName);
+				$disabled = " disabled";
 			}
-			
-			//add default item to the top.
-			if(!$foundItem)
-			{
-				if ($varValue == "") { $selected = " SELECTED"; }
-				else { $selected = ""; }
-			}
-			
-			if($defaultItem !== false) { $buf = '<option value="" ' . $selected . '>' . $defaultItem . "</option>\n" . $buf; }
-			
+
+			$buf .= '<option value="' . $variableName . '"' . $selected . $disabled . '>' . $humanName . "</option>\n";
 		}
-		else //iterate 3 wide format
+
+		//add default item to the top of the list
+		if(!$foundItem)
 		{
-			$buf .= "<li onclick=\"setValue('clientID', '','-none-',''); showElement('menu-id', false);\">
-							    <img class=\"cm cm_avatar\" src=\"\" style=\"max-width: 130px;\">-none-
-						    </li>";
-			foreach ($listArray as $list)
-			{
-				if (!$foundItem && $varValue == $list[0]) { $selected = " SELECTED"; $foundItem = true; }
-				else { $selected = ""; }
-				//$buf .= '<option data-img_src="' . $list[2] . '" value="' . $list[0] . '"' . $selected . '>' . $list[1] . "</option>\n";
-				$buf .= "<li onclick=\"setValue('clientID', '$list[0]','$list[1]','$list[2]'); \">
-							    <img class=\"cm cm_avatar\" src=\"$list[2]\" style=\"max-width: 130px;\">$list[1]
-						    </li>";
-			}
+			if ($varValue == "") { $selected = " SELECTED"; } else { $selected = ""; }
 		}
-		
+
+		if($defaultItem !== false) { $buf = '<option value="" ' . $selected . '>' . $defaultItem . "</option>\n" . $buf; }
+
 		echo $buf;
-		if($hasAvatars)
-		{
-			?></ul>
-			</div>
-			</span>
-			<?php
-		}
-		else { ?></select><?php }
+		?></select><?php
 	}
     
     //1 line textbox
     public static function textBox($varName, $varValue, $extraClasses = "", $extraHTML = "", $boxType = "text")
     {
 		$boxType = strtolower($boxType);
-		if($boxType == "password" || $boxType == "search") { $type = $boxType; } else { $boxType = "text"; }
+		if($boxType != "password" && $boxType == "search") { $boxType = "text"; } //restrict to known types
 		
 		self::$formVars[] = $varName;
 		$ea = self::zEH($extraHTML);
@@ -398,7 +383,7 @@ class zui
     }
     
     //multi line text box
-    public static function textArea($varName, $varValue, $extraClasses = "zl_h50p", $extraHTML = "")
+    public static function textArea($varName, $varValue, $extraClasses = "zl_h25p", $extraHTML = "")
     {
 		self::$formVars[] = $varName;
 		$ea = self::zEH($extraHTML);
@@ -408,6 +393,7 @@ class zui
     }
 	
 	//multi line text box with CKEditor - only works for one editor currently.
+	//will possibly remove in a future version for tiptap
     public static function textAreaCK($varName, $varValue, $featureSet = "basic", $extraClasses = "zl_h50p", $extraHTML = "", $showFiles = false)
     {
 		if(self::$readOnly) { echo self::textArea($varName, $varValue, $extraClasses, $extraHTML); }
@@ -453,6 +439,7 @@ class zui
     }
 	
 	//produce jodit editor
+	//will possibly remove in a future version for tiptap
 	public static function textAreaJodit($varName, $varValue, $featureSet = "basic", $extraClasses = "zl_h50p", $extraHTML = "", $showFiles = false)
     {
 		if(self::$readOnly) { echo self::textArea($varName, $varValue, $extraClasses, $extraHTML); }
@@ -473,16 +460,26 @@ class zui
 			
 			?>
 			<?=self::textArea($varName, $varValue, $extraClasses, $extraHTML)?>
-			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jodit/3.24.2/jodit.min.css"/>
-			<script src="//cdnjs.cloudflare.com/ajax/libs/jodit/3.24.2/jodit.min.js"></script>
+
+            <link rel="stylesheet" href="https://unpkg.com/jodit@4.0.1/es2021/jodit.min.css"/>
+            <script src="https://unpkg.com/jodit@4.0.1/es2021/jodit.min.js"></script>
 			<script>
 			<?php
 			if($featureSet == "basic") //basic settings for email editor only
 			{
 				?>
-				const editor = Jodit.make("#<?=$ID?>", {
+				var editor = Jodit.make("#<?=$ID?>", {
+                   // autofocus: true,
+                   // cursorAfterAutofocus: 'end', // 'end';
+                   // saveSelectionOnBlur: true,
 				  "buttons": "bold,italic,underline,strikethrough,brush,paragraph,|,ul,ol,hr,table,link,|,spellcheck",
-				  "toolbarAdaptive": false
+				  "toolbarAdaptive": false,
+                   //"cursorAfterAutofocus":  'end',
+                   //"saveSelectionOnBlur": true,
+
+                    events: {
+                        afterInit: (instance) => { this.jodit = instance; }
+                        }
 				});
 				<?php
 			}
@@ -513,6 +510,7 @@ class zui
 		}
     }
 	
+	//produce hidden field
 	public static function hiddenField($varName, $varValue, $ID = "")
 	{
 		self::$formVars[] = $varName;
@@ -540,7 +538,7 @@ class zui
 		self::$formVars[] = $varName;
 		if($minDate != "") { $minDate = ' min="' . $minDate . '"'; }
 		if($maxDate != "") { $maxDate = ' max="' . $maxDate . '"'; }
-		?><input type="dateTime" class = "zlt_datePicker" name="<?=$varName?>" value="<?=$varValue?>"<?=$minDate .
+		?><input type="dateTime-local" class = "zlt_datePicker" name="<?=$varName?>" value="<?=$varValue?>"<?=$minDate .
     $maxDate?>><?php
 	}
     
@@ -550,8 +548,11 @@ class zui
 	public static function box($html, $extraClasses = ""){ echo '<div class="zlt_box' . self::zEC($extraClasses) . '">' . $html . "</div>"; }
 	
     //print a nice looking notification to screen.
-    public static function notify($type, $message)
+	//$fadeOutAfterMS is ignored if left blank
+    public static function notify($type, $message, $fadeoutAfterMS = "", $extraClasses = "", $extraHTML = "")
 	{
+		$fadeoutAfterMS = intval($fadeoutAfterMS); //force to 0 if blank
+
 		//correct mistypes
 	    if($type == 'warning') { $type = 'warn'; }
 		elseif($type == 'error') { $type = 'err'; }
@@ -562,19 +563,25 @@ class zui
 		
 		//assign a micon
 		if($type == "warn") { $micon = self::miconR("warning_amber", "", "warn"); }
-		elseif($type == "ok") { $micon = self::miconR("check", "TT", "ok"); }
-		elseif($type == "err") { $micon = self::miconR("close", "O", "err"); }
+		elseif($type == "ok") { $micon = self::miconR("check", "", "ok"); }
+		elseif($type == "err") { $micon = self::miconR("close", "", "err"); }
+
+		//setup fadeout, if applies
+		if($fadeoutAfterMS != 0) { $fadeout = "style='animation: zui_fadeOut " . intval($fadeoutAfterMS * 0.66) . "ms " . $fadeoutAfterMS . "ms' onanimationend='this.remove()'"; }
+		else { $fadeout = ''; }
 		
 		//long or short format?
-		if(strlen($message) <= 15) { ?><div class="zlt_notify<?=$type?>"><?=$micon?>&nbsp;<?=$message?></div><?php }
-		else { ?><div class="zlt_notify<?=$type?>"><table><tr><td class="zl_pad0"><?=$micon?>&nbsp;</td><td class="zl_pad0"><?=$message?></td></tr></table></div><?php }
+		if(strlen($message) <= 15)
+		{ ?><div class="zlt_notify<?=$type?><?=self::zEC($extraClasses)?>" style="position:relative;" <?=$fadeout?><?=self::zEH($extraHTML)?>><?=$micon?>&nbsp;<?=$message?></div><?php }
+		else
+		{ ?><div class="zlt_notify<?=$type?><?=self::zEC($extraClasses)?>" style="position:relative;" <?=$fadeout?><?=self::zEH($extraHTML)?>><div class="nicon"><?=$micon?></div><div class = "ntext"><?=$message?></div></div><?php }
 	}
 	
     //wrap a tooltip around a HTML chunk
     public static function toolTip($htmlChunk, $tipCaption)
     { ?><div class="zlt_toolTip"><?=$htmlChunk?><span class="zlt_toolTipText"><?=$tipCaption?></span></div><?php }
 	
-	//shows minimize/maximize/exit
+	//shows minimize/maximize/exit ( used by debugger )
 	public static function windowAction(string $type, string $divToToggle, string $showMode = "inline-block")
 	{
 		switch($type)
@@ -586,9 +593,8 @@ class zui
 		}
 	}
 	
+	//DEPRECATED - cannot handle multiple instances.
 	//Send a basic associative array with the key as the title, and the value as the content, and get tabs.
-	//Could use some serious optimization.
-	//Does not work with multiple instances - deprecated
 	public static function tabs($tabData, $extraClassesTabs = "", $extraClassesContent = "", $openFirstTab = false, $rightOfTabsHTML = "")
 	{
 		if(!is_array($tabData)){ self::fault("Invalid array passed to zui::tabs"); return; }
@@ -677,8 +683,8 @@ class zui
 				}
 				if($rightOfTabsHTML != "") { echo '<div class="zl_w100pp"><span>' . $rightOfTabsHTML . '</span></div>'; }
 				?>
-			</ul><?php
-			
+			</ul>
+<?php
 			//produce tab contents
 			foreach($tabData as $k => $v) { ?><div class="tab-content<?=self::zEC($extraClassesContent)?>"><?=$v?></div><?php }
 			?>
@@ -686,92 +692,102 @@ class zui
 		<?php
 	}
 	
-	
-    //prints a table from an associative or flat array.
-	//Best for printing database output.
-	//$showFields optionally renames TH titles based on SQL field => english names relations. Works exactly like ZPTA;
-	public static function printTable($tableArray, $extraClasses = "", $extraHTML = "", $showFields = [], $isMagic = false)
+	//Array to table printer
+    public static function printTable
+	(
+		$tableArray,          //Array input, preferably zdb::array() output ( array of assoc arrays ), but accepts  other formats.
+	    $showFields = [],     //SQL field => English name for given TH field. Input determines order of field display. If blank array, default ordering is used
+	    $THfieldClasses = [], //SQL field => className for given TH field. Will apply a class to TH ( affect width, effects, etc )
+	    $extraClasses = "",   //Any extra CSS classes in the <table> tag
+	    $extraHTML = ""       //Any extra HTML in the <table> tag
+	)
     {
-		//init
-    	if(zs::isBlank($tableArray)) { self::notify("warn", "There isn't any information to display."); return; }
-		if($extraClasses != "") { $ec = " " . $extraClasses; } else { $ec = ""; }
-	    $arrayInfo = zarr::getArrayInfo($tableArray, true); //identify type of array
-		
-		//add another layer of depth if we don't have an array of arrays
-		if($arrayInfo['depth'] == 1 && $arrayInfo['type'] != "singleNum") { $tableArray = [$tableArray]; }
-		elseif($arrayInfo['depth'] > 2) //can't
-		{ self::notify("error", "The sent array is more than 2 layers deep; cannot display"); return; }
-		elseif(!$arrayInfo['canLoop']) //nope
-		{ self::notify("error", "The sent array un-loopable ( contains objects, strange structure, etc )"); return; }
-		
-		//quick, uncomplicated output
-		if($arrayInfo['type'] == "singleNum")
-		{
-	        echo "\n" . '<table class="zlt_table' . $ec . '"' . $extraHTML . '>' . "\n";
-	        echo '<tr class = "zl_stickyT"><th>Array</th></tr>';
-		    foreach($tableArray as $value) { echo "<tr><td>" . $value . "</td></tr>"; }
-		    echo "</table>\n";
-			return;
-		}
+        //init and sanity checks
+    	if(zs::isBlank($tableArray)) { self::notify("warn", "There isn't any information to display."); return; } //user friendly
+		if(!is_array($THfieldClasses)) { zl::fault("non-array sent to zui::printTable THfieldClasses"); } //programmer hostile
+        if($extraClasses != "") { $ec = " " . $extraClasses; } else { $ec = ""; }
+		$filterFields = !zs::isBlank($showFields); //speed hack because we do this check a lot
 	    
-		//determine first keys.
+	    $arrayInfo = zarr::getArrayInfo($tableArray, true); //identify type of array
+	    
+        //add another layer of depth if we don't have an array of arrays
+        if($arrayInfo['depth'] == 1 && $arrayInfo['type'] != "singleNum") { $tableArray = [$tableArray]; }
+        elseif($arrayInfo['depth'] > 2) { self::notify("error", "The array is > 2 layers deep; can't display"); return; }
+        elseif(!$arrayInfo['canLoop']){ self::notify("error", "The array is non-iterable ( contains objects, etc )"); return; }
+	    
+	    //if $showFields exists, re-order array
+        if(!zs::isBlank($showFields))
+        {
+	        $order = []; $temp = [];
+            foreach ($showFields as $k => $v) { $order[] = $k; }
+            foreach($tableArray as $k => $v) { $temp[] = array_replace(array_flip($order), $v); }
+            $tableArray = $temp;
+        }
+
+        //quick, uncomplicated output & GTFO
+        if($arrayInfo['type'] == "singleNum")
+        {
+            echo "\n" . '<table class="zlt_table' . $ec . '"' . $extraHTML . '>' . "\n";
+            echo '<tr class = "zl_stickyT0"><th>Array</th></tr>';
+            foreach($tableArray as $value) { echo "<tr><td>" . $value . "</td></tr>"; }
+            echo "</table>\n";
+            return;
+        }
+
+	    //determine first keys.
 	    if(!isset($tableArray[0]))
 	    {
-			$firstData = zarr::first($tableArray); //multi row
-	    	if(!zarr::isAssociative($firstData)) { $firstData = $tableArray; } //must be a single row single line
+	        $firstData = zarr::first($tableArray); //multi row
+	        if(!zarr::isAssociative($firstData)) { $firstData = $tableArray; } //must be a single row single line
 	    }
 	    else { $firstData = zarr::first($tableArray); }
-	    
-    	echo "\n" . '<table class="zlt_table' . $ec . '"' . $extraHTML . '>' . "\n";
-    	echo '<tr class = "zl_stickyT">';
-	    
-		$filterFields = !zs::isBlank($showFields); //for speed
 		
-		foreach($firstData as $key => $value)
-		{
-			if($filterFields){ if(isset($showFields[$key])) { echo "<th>" . $showFields[$key] . "</th>"; } }
-			else { echo "<th>" . $key . "</th>"; }
-		}
+		//start output of TH
+	    echo "\n" . '<table class="zlt_table' . $ec . '"' . $extraHTML . '>' . "\n";
+	    echo '<tr class = "zl_stickyT0">';
 		
-	    echo "</tr>\n";
-	    
-		$x = 0;
-	    foreach($tableArray as $tableItem)
-        {
-            echo "<tr id=$x>";
-			foreach($tableItem as $key => $value)
-			{
-				if($filterFields) { if(isset($showFields[$key])) { echo "<td>" . zs::pr($value) . "</td>"; } }
-				else { echo "<td>" . zs::pr($value) . "</td>"; }
-			}
-			echo "</tr>";
-			$x++;
-        }
-		
-		//make fake end row based on first row - this should be removed in the future.
-		if($isMagic)
-		{
-			$tdCount = count($tableArray[0]);
+	    foreach($firstData as $key => $value)
+	    {
+	        if(!zs::isBlank($THfieldClasses[$key])) { $class = ' class="' . $THfieldClasses[$key] . '"'; }
+			else { $class = ""; }
 			
-			echo "<tr>";
-			for($i = 0; $i < $tdCount; $i++)
-			{
-				if($i == 0) { echo '<td>' . '<i class="zlt_miconTT link edit_data " ">add</i>'. '</td>'; }
-				else if($i == ($tdCount-1)){ echo '<td>' . '<i  style="display:none;"class="zlt_miconTT link  save" " onclick="saveData($(this))">done_outline</i>'. '</td>';  }
-				else { echo '<td></td>'; }
-			}
-			echo "</tr>";
-		}
+	        if($filterFields)
+	        {
+	            if(isset($showFields[$key])) { echo "<th " . $class . ">" . $showFields[$key] . "</th>"; }
+				//otherwise skip display of that TH in this mode
+	        }
+	        else { echo "<th>" . $key . "</th>"; }
+	    }
+	
+	    echo "</tr>\n";
 		
-        ?>
-	    </table>
-	    <?php
+		//start output of TD
+	    $x = 0;
+	    foreach($tableArray as $tableItem)
+	    {
+			echo "<tr id ='$x'>";
+	        foreach($tableItem as $key => $value)
+	        {
+	            if($filterFields)
+	            {
+					if(isset($showFields[$key])) { echo "<td>" . zs::pr($value) . "</td>"; }
+					//otherwise skip display of TD in this mode
+		        }
+	            else { echo "<td>" . zs::pr($value) . "</td>"; }
+	        }
+	        echo "</tr>";
+	        $x++;
+	    }
+		
+	    ?></table>
+        <?php
     }
 		
 	//shortcuts for return versions.
 	public static function windowActionR(...$x) { self::bufStart(); self::windowAction(...$x); return self::bufStop(); }
 	public static function boxR(...$x) { self::bufStart(); self::box(...$x); return self::bufStop(); }
 	public static function notifyR(...$x) { self::bufStart(); self::notify(...$x); return self::bufStop(); }
+	public static function selectBoxR_new(...$x) { self::bufStart(); self::selectBox_new(...$x); return self::bufStop(); }
 	public static function selectBoxR(...$x) { self::bufStart(); self::selectBox(...$x); return self::bufStop(); }
 	public static function textBoxR(...$x) { self::bufStart(); self::textBoxR(...$x); return self::bufStop(); }
 	public static function textAreaR(...$x) { self::bufStart(); self::textArea(...$x); return self::bufStop(); }
@@ -786,15 +802,26 @@ class zui
 	public static function miconR(...$x) { self::bufStart(); self::micon(...$x); return self::bufStop(); }
 	public static function tabsR(...$x) { self::bufStart(); self::tabs(...$x); return self::bufStop(); }
 	public static function tabsCSSR(...$x) { self::bufStart(); self::tabsCSS(...$x); return self::bufStop(); }
+	public static function toolTipR(...$x) { self::bufStart(); self::toolTip(...$x); return self::bufStop(); }
 	
 	//zui internal shortcut functions.
 	
+	//inject class to colorize border if valid/invalid field
+	private static function zV($varName)
+	{
+		if(self::$showZvalidFail && !zs::isBlank(zfilter::$validateChecksFailed[$varName])) { echo " zl_bordErr"; }
+		if(self::$showZvalidSuccess && !zs::isBlank(zfilter::$validateChecksFailed[$varName])) { echo " zl_bordOk"; }
+	}
+	
 	//process extra HTML
 	private static function zEH($extraHTML = "") { if($extraHTML != "") { $extraHTML = " " . trim($extraHTML); } return $extraHTML; }
+	
 	//process extra classes
 	private static function zEC($extraClasses = "") { if($extraClasses != "") { return " " . trim($extraClasses); } else { return ""; } }
+	
 	//micon shortcut
 	private static function zMI($miconName) { { if($miconName != "") { return " " . self::miconR(trim($miconName)); } else { return ""; } } }
+	
 	//inject 'disabled and autocomplete=off' into input field when readOnly is turned on
 	private static function zD()
 	{
@@ -802,12 +829,6 @@ class zui
 		if(self::$readOnly) { $add .= " disabled"; }
 		if(self::$autocompleteOff) { $add .= ' autocomplete="off"'; }
 		return $add;
-	}
-	//inject class to colorize border if valid/invalid field
-	private static function zV($varName)
-	{
-		if(self::$showZvalidFail && !zs::isBlank(zfilter::$validateChecksFailed[$varName])) { echo " zl_bordErr"; }
-		if(self::$showZvalidSuccess && !zs::isBlank(zfilter::$validateChecksFailed[$varName])) { echo " zl_bordOk"; }
 	}
 	
 	//generate an ID and add it to the array that tracks them.

@@ -1,5 +1,5 @@
 <?php
-//classes\imageTender. Developed for Endless Sphere by Courtesy Software.
+//classes\imageTender. Developed for ES by Courtesy Software.
 //Version 0.9 - 10/2021 - Finished and working
 //Version 1.0 Todos: periodically scan folder for new files, file changes, and deleted files.
 //Version 1.1 Todos: allow safe multithreading by using multiple lock files. Add ability to specify number of concurrent processes used.
@@ -39,7 +39,7 @@ class imageTender
 		$this->set['fixExtensions'] = false;                            //fix/add extensions for files?
 		$this->set['copyCorruptTo'] = "/var/www/corruptfiles";          //copy corrupt files? leave blank if unwanted.
 		$this->set['renameCorruptFiles'] = false;                       //rename broken extensions when copying corrupt files.
-		$this->set['logToFile'] = "imageTender.log";            //log output to file? Leave blank unwanted..
+		$this->set['logToFile'] = "classes\imageTender.log";            //log output to file? Leave blank unwanted..
 		
 		//image settings.
 		$this->set['processImages'] = true;                             //process images at all?
@@ -78,13 +78,13 @@ class imageTender
 	{
 		ztime::stopWatch("processBatch*");
 		
-		if(zsys::isLocked("imageTender"))
+		if(zsys::isLocked("classes\imageTender"))
 		{
 			$this->fault("lock enabled; cannot proceed. Another process running?", true);
 		}
 		else
 		{
-			zsys::lockStart("imageTender");
+			zsys::lockStart("classes\imageTender");
 		}
 		
 		//temporary override of max execution time.
@@ -129,11 +129,11 @@ class imageTender
 		//announce operation and begin performance counters.
 		if($this->set['fullPassMode'])
 		{
-			$this->talkStatus("---imageTender started (single pass mode) @ " . ztime::now(), true);
+			$this->talkStatus("---classes\imageTender started (single pass mode) @ " . ztime::now(), true);
 		}
 		else
 		{
-			$this->talkStatus("---imageTender started (database mode) @ " . ztime::now(), true);
+			$this->talkStatus("---classes\imageTender started (database mode) @ " . ztime::now(), true);
 		}
 		
 		//reset batch counters.
@@ -161,7 +161,7 @@ class imageTender
 			}
 		}
 		
-		zsys::lockStop("imageTender"); //remove lock immediately.
+		zsys::lockStop("classes\imageTender"); //remove lock immediately.
 		
 		//figure out percentage of reduction of this batch.
 		if(count($this->percentageReduction) > 0)
@@ -985,7 +985,7 @@ class imageTender
 	{
 		if(!$becauseLocked)
 		{
-			zsys::lockStop("imageTender");
+			zsys::lockStop("classes\imageTender");
 		}
 		$this->talkStatus($this->msgBuffer, true); //if there were messages..
 		
@@ -1004,7 +1004,7 @@ class imageTender
 		}
 		else
 		{
-			zui::quip($reason, "imageTender error");
+			zui::quip($reason, "classes\imageTender error");
 		}
 		
 		zl::terminate("program");

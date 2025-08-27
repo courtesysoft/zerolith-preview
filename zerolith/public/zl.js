@@ -1,5 +1,5 @@
 // ------------ shortcuts and functions used in zerolith ------------- //
-//DEPRECATED 02/01/2024 - DS
+//DEPRECATED 02/01/2024, DO NOT USE - DS
 
 function zl_handleHXerror(event)
 {

@@ -1,5 +1,7 @@
 <?php
-// zerolith Filtering Library - (c)2021 Courtesy Software
+//Zerolith Filtering Library
+use voku\helper\AntiXSS;
+
 class zfilter
 {
 	private static $validateChecks;             //array of variables for filter to co-process
@@ -10,9 +12,9 @@ class zfilter
 	public static $validatePassRegEx = "/[^A-Za-z0-9\s',-.!_]/";
 	public static $validatePassSpecialChars = "',-.!_";  //allowable special characters in password validation ( displayed to the user ).
 	public static $validateChecksFailed = []; //the aggregated list of all failed checks; ZUI can reference this.
-	
+
 	private static $badwords = []; //not used?
-	
+
     //process and filter inputted form variables and return as an associative array.
 	//Use extract() to pop the array into separate vars in local scope if needed at the beginning of a script.
 	//Or simply take the output into an associative array.
@@ -22,7 +24,7 @@ class zfilter
         if($_SERVER['REQUEST_METHOD'] == "GET"){ $getVars = $_GET; }
         else if($_SERVER['REQUEST_METHOD'] == "POST"){ $getVars = $_POST; }
         else { return; } //there is no data to return; we don't know the mode!
-        
+
         $outputVars = [];
         $varArray = zarr::toArray($inputVars, false); //can take a pipe or regular array.
         foreach($varArray as $varName)
@@ -67,7 +69,7 @@ class zfilter
     //only allow harmless characters
     public static function stringSafe($inString)
     {
-        //filter out all nonalphanumeric characters except - . , .
+        //filter out all nonalphanumeric characters except `,-.&_ and space
         $inString = preg_replace("/[^A-Za-z0-9\s',-.&_]/", "", $inString);
         $inString = trim($inString, " _,.'"); //trim characters off the sides
         return $inString;
@@ -83,7 +85,7 @@ class zfilter
         $inString = str_replace("  ", " ", $inString);
         $inString = str_replace("@@", "@", $inString);
         $inString = str_replace("''", "'", $inString);
-		
+
 		//anti sql injection
         $inString = str_ireplace("drop index", "dro p index", $inString);
         $inString = str_ireplace("drop table", "dro p table", $inString);
@@ -109,41 +111,40 @@ class zfilter
 
     public static function number($inString) //filter out all non-numeric characters.
     { return preg_replace("/[^0-9]/", "", $inString); }
-    
+
     public static function email($inString) //filter out invalid email characters
     { return preg_replace("/[^A-Za-z0-9@!#&*+-=_.]/", "", $inString); }
-	
+
 	public static function html($inString) //perform XSS filtering on HTML.
     {
-		//and then...
-	    zl::fault("html filtering not available yet.");
-		
-		//which one is better?
-		
-		require_once(zl_frameworkPath . "/classes/3p/AntiXSS/AntiXSS.php");
-		$antiXss = new AntiXSS();
-		return $antiXss->xss_clean($inString);
-		
-		require_once(zl_frameworkPath . "/classes/3p/htmLawed/htmLawed.php");
-		$inString = htmLawed($inString, array('safe'=>1));
+		// This setting is for the htmLawed library
+		// pcre.backtrack_limit sets the maximum number of steps that pcre will take to match a regex.
+		ini_set('pcre.backtrack_limit', 50000000);
+		zl::quipD(strlen($inString));
+		require_once(zl::$site['pathZerolithClasses'] . "/3p/htmLawed/htmLawed.php");
+		// $inString = htmLawed($inString);
+		$config = array('safe'=>1,'schemes'=>'src: data, file, http, https; href: aim, feed, file, ftp, gopher, http, https, irc, mailto, news, nntp, sftp, ssh, tel, telnet; style: !; *:file, http, https');
+
+		$inString = htmLawed($inString, $config);
+		zl::quipD(strlen($inString), "html filtered via zfilter::html()");
 		return $inString;
 	}
 
     public static function URL($inString) //filter out all non-numeric characters except ones used in URLs.
     { return preg_replace("/[^A-Za-z0-9\s+-.|~_&?=:\/@]/", "", $inString); }
-	
-	
-	
+
+
+
 	// --------- zvalid section - do not use yet ------------
-	
-	
-	
+
+
+
 	//zvalid class concept. Performs batch and single validations and returns list of messages + fail/succeed status
 	//01/16/2022 - v0.0 - concept
-	
+
 	//concept: user adds validation per var ahead of filterarray, with similar syntax, runs filterarray, then gets results with validResult()
 	//zui:: provides an easy way to output validation messages
-	
+
 	//This adds pending checks that zfilter will send the values to.
 	//This requires that you define your checks before running zfilter, and process checks after zfilter
 	//This is a short way to check a lot of variables for gigaforms.
@@ -155,17 +156,17 @@ class zfilter
 		//convert array or piped input into array
 		$varNames = zarr::toArray($varNames);
 		$englishNames = zarr::toArray($englishNames);
-		
+
 		if($englishNames == "") { $englishNames = $varNames; }
 		else if(substr_count($englishNames, "|") != substr_count($varNames, "|"))
 		{ zl::fault("number of english names doesn't match the number of variable names"); }
-		
+
 		//add to the list of variables to check when running filtering
 		$count = count($varNames);
 		for($i = 0; $i < $count; $i++)
 		{ self::$validateChecks['varName'] = ['varValue' => $varNames[$i], 'rules' => $rules, 'englishName' => $englishNames[$i]]; }
 	}
-	
+
 	//run an individual check - zfilter uses this function internally
 	static private function validateCheck($varName, $varValue, $rules, $englishName = "")
 	{
@@ -203,19 +204,19 @@ class zfilter
 				$rule = str_replace("below", "", $rule);
 				if(!is_numeric($rule) || $rule == "0") { zl::terminate("invalid below# rule"); }
 				if(strlen($varValue) < $rule) { self::$validateChecksFailed[$varName] = "The " . $englishName . " field isn't a valid email."; }
-				
+
 			}
 			elseif(zs::contains($rule, "above")) //above # of characters; example: above1
 			{
 				$rule = str_replace("above", "", $rule);
 				if(!is_numeric($rule)) { zl::terminate("invalid above# rule"); }
-				
+
 			}
 			else //hard stop on processing because we can't ensure proper processing
 			{ zl::fault("An unrecognized rule attempted to process in zfilter::processChecks()"); }
 		}
 	}
-	
+
 	//compute results from the zfilter phase - sloppy RN
 	static private function validateResult()
 	{
@@ -230,24 +231,16 @@ class zfilter
 		}
 		else { self::$validateChecks = []; return true; }
 	}
-	
+
 	//--------- individual validators which just return true/false. -------
-	
+
 	static public function isEmail($email) { return(filter_var($email, FILTER_VALIDATE_EMAIL)); }
-	
+
 	static public function isHtml($input) //detect the presence of HTML; possibly too strict
 	{
 		//such optimized, wow
 		if(strpos($input, "<") !== FALSE) { return (preg_match("/<([^>]*)>/im", $input) !== 0); }
 		else { return false; }
 	}
-	
-	//detect the presence of javascript, iframe, style, tags which are likely malicious in nature
-	//DO NOT USE, far from complete!!!!
-	static public function hasBadHtml($input, $badTagsPiped = "script|iframe|style|form|meta|embed")
-	{
-		if(strpos($input, "<") !== FALSE) { return (preg_match("/<\s*\/?\s*" . $badTagsPiped . "([^>]*)?>/im",$input) !== 0); }
-		else { return false; }
-	}
 }
-?>
+

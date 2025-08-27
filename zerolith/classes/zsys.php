@@ -16,7 +16,7 @@ class zsys
 		return(self::$serialIter . str_replace(".","",substr(microtime(true), -9)) );
 	}
 	
-	//used internally - could use a less strict filter..
+	//used internally - could use a way less strict filter..
 	private static function filter($input){ return zstr::shorten(zfilter::page($input)); }
 	
 	//check for existance of a command.
@@ -53,7 +53,7 @@ class zsys
 	}
 	
 	//stop a lock.
-    public static function lockStop($lockName = "default") //stop and return timer.
+    public static function lockStop($lockName = "default")
     {
     	$lockData = self::getLockData($lockName);
     	
@@ -76,12 +76,12 @@ class zsys
     	self::$locks = [];
     }
 	
-	//internal shortcut
+	//internal shortcut.
 	private static function getLockData($lockname)
 	{
 		$lockData = [];
 		$lockData['name'] = self::filter($lockname);
-		$lockData['filename'] = zl_frameworkPath . "zl_internal/lockfiles/" . $lockData['name'] . ".zlock";
+		$lockData['filename'] = zl::$site['pathZerolithData'] . "lockFiles/" . $lockData['name'] . ".zlock";
 		return $lockData;
 	}
 	
@@ -91,8 +91,9 @@ class zsys
 	
 	// Thanks chatGPT!
 	// Returns server load in percent (just number, without percent sign)
-	public static function getCpuUsedPct()
+	public static function getCpuUsedPct($seconds = 0.95)
 	{
+		ztime::stopWatch("getCpuUsedPct");
 	    $load = null;
 		
 		//decipher processor statistics from /proc/stat
@@ -104,20 +105,19 @@ class zsys
 		
 		        if($stats !== false)
 		        {
-		            // Remove double spaces to make it easier to extract values with explode()
+		            //Remove double spaces to make it easier to extract values with explode()
 		            $stats = preg_replace("/[[:blank:]]+/", " ", $stats);
 		
-		            // Separate lines
+		            //Separate lines
 		            $stats = str_replace(array("\r\n", "\n\r", "\r"), "\n", $stats);
 		            $stats = explode("\n", $stats);
 		
-		            // Separate values and find line for main CPU load
+		            //Separate values and find line for main CPU load
 		            foreach($stats as $statLine)
 		            {
 		                $statLineData = explode(" ", trim($statLine));
 		
-		                // Found!
-		                if(count($statLineData) >= 5 && $statLineData[0] == "cpu")
+		                if(count($statLineData) >= 5 && $statLineData[0] == "cpu") // Found!
 		                { return [$statLineData[1], $statLineData[2], $statLineData[3], $statLineData[4]]; }
 		            }
 		        }
@@ -137,10 +137,10 @@ class zsys
 	    {
 	        if(is_readable("/proc/stat"))
 	        {
-	            // Collect 2 samples - each with 1 second period
+	            // Collect 2 samples - with 0.9sec measuring time
 	            // See: https://de.wikipedia.org/wiki/Load#Der_Load_Average_auf_Unix-Systemen
 	            $statData1 = decipherLinux();
-	            sleep(1);
+	            usleep($seconds * 950000);
 	            $statData2 = decipherLinux();
 	
 	            if(!is_null($statData1) && !is_null($statData2))
@@ -160,14 +160,16 @@ class zsys
 	            }
 	        }
 	    }
-	
+		
+		ztime::stopWatch("getCpuUsedPct");
 	    return round($load, 2);
 	}
 	
-	// use 'free' to get memory used
+	// use 'free' to get memory used ( linux only )
 	public static function getMemUsed()
 	{
-		// Memory usage
+		ztime::stopWatch("getMemUsed");
+		//Memory usage
 	    $output = shell_exec('free');
 	    $lines = explode("\n", trim($output));
 		$memInfo = preg_split('/\s+/', trim($lines[1])); // Extract memory values from last line of output
@@ -175,18 +177,19 @@ class zsys
 		//Return megabyte values for each
 	    $stats =
 		[
-	        'total' => round($memInfo[1] / 1024, 2),
-	        'used' => round($memInfo[2] / 1024, 2),
-	        'free' => round($memInfo[3] / 1024, 2),
+	        'total' =>      round($memInfo[1] / 1024, 2),
+	        'used' =>       round($memInfo[2] / 1024, 2),
+	        'free' =>       round($memInfo[3] / 1024, 2),
 			'buff/cache' => round($memInfo[5] / 1024, 2),
-			'avail' => round($memInfo[6] / 1024, 2)
+			'avail' =>      round($memInfo[6] / 1024, 2)
 	    ];
 		$stats['usedPct'] = abs(round(($stats['avail'] / ($stats['total'])) * 100, 2) - 100);
 		$stats['availPct'] = round(($stats['avail'] / ($stats['total'])) * 100, 2);
+		ztime::stopWatch("getMemUsed");
 		return $stats;
 	}
 	
-	//gets disk space available with DF
+	//gets disk space available with DF ( linux only )
 	public static function getDiskSpace($fileSystemTypeFilter = "-x squashfs -x tmpfs -x devtmpfs")
 	{
 		ztime::stopWatch("getDiskSpace");
@@ -201,18 +204,18 @@ class zsys
 			//cols[0] is the filesystem name.
 			$disks[$cols[0]] =
 			[
-				'fs' => $cols[0],
-		        'size' => $cols[1],
-		        'used' => $cols[2],
-		        'avail' => $cols[3],
+				'fs' =>      $cols[0],
+		        'size' =>    $cols[1],
+		        'used' =>    $cols[2],
+		        'avail' =>   $cols[3],
 				'usedPct' => rtrim($cols[4], "%")
 		    ];
 		}
-		return $disks;
 		ztime::stopWatch("getDiskSpace");
+		return $disks;
 	}
 	
-	//return full path information on a file; rearranged and blanked.
+	//return a fancy full path information on a file.
 	public static function getPathData($filename)
 	{
 		$pathData = [];
@@ -228,65 +231,7 @@ class zsys
 	
 	//--------------------------------- File system -------------------------------
 	
-	//upload an image, resize it with gd, and return the binary data as a string
-	public static function uploadImageToString($fileData)
-	{
-		$result = array("result" => true, "data" => "", "reason" => "");
-		
-		if(isset($fileData['name'])) //must be an image upload.
-		{
-			if(!isset($fileData['name'] ) || strlen( $fileData['name']) > 150 ) { $result['result'] = false; $result['reason'] .= "Unspecified issue with the filename."; }
-			if( $fileData['errors'] != 0 ) { $result['result'] = false; $result['reason'] .= "Try a different format or web browser."; }
-			
-			//bail early.
-			if(!$result['result']) { return $result;}
-			
-			$extension = pathinfo($fileData['name'], PATHINFO_EXTENSION); //get filename extension
-			if($extension == "") { $result['result'] = false; $result['reason'] .= "File did not have an extension."; }
-			$e = strtolower($extension);
-			
-			if($fileData['size'] > 10000000) { $result['result'] = false; $result['reason'] .= "Uploaded file is over 10mb in size.";}
-			elseif($e == "jpg" || $e == "jpeg" || $e == "png" || $e == "gif" || $e == "wbmp" || $e == "webp" || $e == "xbm" || $e == "tiff" )
-			{
-				$srcImg = imagecreatefromstring(file_get_contents($fileData['tmp_name']));
-				$origWidth = imagesx($srcImg); $origHeight = imagesy($srcImg);
-				$outputWidth = 1200;
-				
-				if($origWidth < $outputWidth )	//don't resize it
-				{
-					$outputImg = imagecreatetruecolor($origWidth, $origHeight);
-					imagecopy($outputImg, $srcImg, 0, 0, 0, 0, $origWidth, $origHeight);
-				}
-				else	//resize it
-				{
-					$ratio = $origWidth / $outputWidth;	//shrink on ratio to 800 pixels wide
-					$outputHeight = intval($origHeight / $ratio);
-					$outputImg = imagecreatetruecolor($outputWidth, $outputHeight);
-					imagecopyresampled($outputImg, $srcImg, 0, 0, 0, 0, $outputWidth, $outputHeight, $origWidth, $origHeight);
-				}
-				ob_start();
-				if(!imagejpeg($outputImg, NULL, 80))
-				{ $result['result'] = "false"; $result['reason'] .= "Can't upload image to our server. Please contact us!"; }
-				$result['data'] = ob_get_clean();
-				imagedestroy($outputImg); imagedestroy($srcImg);	//now, lay waste to these poor temp images!
-			}
-			else {$result['result'] = false; $result['reason'] .= "Uploaded file is not a recognizable image or PDF."; }
-			
-			//form final image string.
-			if($result['result'])
-			{
-				$result['data'] = $fileData['name']."|".$fileData['type']."|".base64_encode($result['data']);
-				$result['reason'] .= "The file uploaded successfully.";
-			}
-		}
-		else {$result['reason'] .= "Didn't look like a valid file upload."; }
-		
-		if($result['result']) {$result['reason'] = zui::notifyR("ok", $result['reason']); }
-		else {$result['reason'] = zui::notifyR("error", $result['reason']); }
-		
-		return $result;
-	}
-	
+
 	//return an extension based on MIME detection
 	public static function mimeToExtension($mime)
 	{

@@ -1,0 +1,18 @@
+# No logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# No OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# No cache files #
+zl_internal/cache/

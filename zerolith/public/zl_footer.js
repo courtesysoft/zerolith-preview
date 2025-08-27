@@ -1,10 +1,10 @@
 //configure htmx
-htmx.config.timeout = 5000; //5 second http timeout
+if(htmx.config.timeout == "") { htmx.config.timeout = 30000; } //30 second http timeout if we didn't previously override this
 htmx.includeIndicatorStyles = false;
 
 //htmx global response error handler
-htmx.on("htmx:responseError", function (event) { zl_handleHXerror(event); })
-htmx.on("htmx:timeout", function (event) { zl_handleHXerror(event); })
+htmx.on("htmx:responseError", function (event) { zl.hxError(event); })
+htmx.on("htmx:timeout", function (event) { zl.hxError(event); })
 
 //slowly fade the target div out on transmission to indicate something is being done
 document.body.addEventListener('htmx:beforeRequest', function(evt)

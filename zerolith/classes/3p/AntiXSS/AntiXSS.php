@@ -36,6 +36,7 @@ use const HTML_ENTITIES;
  * @copyright   Copyright (c) 2015 - 2020, Lars Moelleken (https://moelleken.org/)
  * @license     http://opensource.org/licenses/MIT	MIT License
  */
+
 final class AntiXSS
 {
     const VOKU_ANTI_XSS_GT = 'voku::anti-xss::gt';
@@ -72,7 +73,7 @@ final class AntiXSS
         '\(?ScriptElement\)?\.',
         'd\s*a\s*t\s*a\s*:',
     ];
-    
+
     /**
      * List of simple never allowed call statements.
      *
@@ -1925,7 +1926,7 @@ final class AntiXSS
 
         return $this;
     }
-    
+
     /**
      * Add some strings to the "_never_allowed_call_strings"-array.
      *
@@ -2234,7 +2235,7 @@ final class AntiXSS
                 } else {
                     $alreadyFoundXss = false;
                 }
-                
+
                 $value = $this->xss_clean($value);
 
                 /* @phpstan-ignore-next-line | _xss_found is maybe changed via "xss_clean" */

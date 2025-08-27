@@ -1,5 +1,5 @@
 <?php
-// Zerolith string Library - (c)2022 Courtesy Software
+// Zerolith string Library
 // 1.0 - 01/2023
 
 class zstr
@@ -33,10 +33,11 @@ class zstr
 	}
 	
 	//cut a string into ... after X characters
-    public static function shorten($textString, $limit = 30)
+    public static function shorten($textString, $limit = 30, $dotdotdot = "...")
     {
+        if(!is_string($textString)) { return $textString; }
         if($limit < 4) { return $textString; }
-        if(strlen($textString) > $limit) { $textString = substr($textString,0,($limit - 3)) . "..."; }
+        if(strlen($textString) > $limit) { $textString = substr($textString,0,($limit - 3)) . $dotdotdot; }
         return $textString;
     }
     
@@ -58,7 +59,7 @@ class zstr
 		return $textString;
 	}
 	
-	//the opposite, crappier
+	//the opposite, but worse
 	public static function textToHtml($textString){ return preg_replace('/\v+|\\\r\\\n/Ui','<br/>',$textString); }
 	
 	//strips everything to the right of a string, including the character itself. - needs testing

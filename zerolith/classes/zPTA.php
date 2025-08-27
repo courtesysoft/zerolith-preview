@@ -4,6 +4,12 @@
 // v1.00 - fixed invalid HTML, added 'degrade' mode
 // v1.10 - 01/19/23 - simplified input, removed filter button features and added HTMX features.
 
+//TODO v1.2: remove $degrade, make dependent on $degradeTHwidths being blank or nah
+//TODO v1.2: $htmxGenerateTRIDField should be removed.
+
+//printTable Advanced - produces a table with variable sorting.
+//Allows intermediate mutation of rows between the prepare and output statements.
+
 class zPTA
 {
 	private static $rows = []; //internal buffer of PTA rows to output.
@@ -25,19 +31,31 @@ class zPTA
 	public static $name = "";
 	public static $extraWrapperClasses = "";
 	public static $rowsPerPage = 0;
+    public static $tasksToShowArray = [];
 	
 	//buffer vars between classes
 	public static $rowsTotal = "";
 	public static $injectLinkString = "";
+
+    public static $filter= "";
 	
 	//produce a printTable Advanced line ( TR ) and return it into an array for later printing.
 	//$bgClasses can be used to set a row style.
 	public static function addRow($rowData, $bgClasses) { self::$rows[] = get_defined_vars(); }
+	
+	//for alternating a $bgRow between two classes ( function rewrites the value )
+	public static function alternateRowClass($targetVariable, $firstClass, $secondClass)
+	{ if($targetVariable != $firstClass) { $targetVariable = $firstClass; } else { $targetVariable = $secondClass; } return $targetVariable; }
 
-	//printTable Advanced - produces a table with variable sorting.
-	//Allows intermediate mutation of rows between the prepare and output statements.
 
-	//Initialize the PTA.
+    public static function PTAFilter($array,$inOrExcluded)
+    {
+        //allows filtering in or out of results based on their ID.
+        self::$filter = "hi";
+
+    }
+
+    //Initialize the PTA.
 	public static function prepare
 	(
 		//mandatory fields
@@ -61,7 +79,8 @@ class zPTA
 		$degradeTHwidths = "",      //SQL field => grid-template-columns parameter for given TH field in degrade mode.
 		$htmxTargetSelector = "",   //set a HTMX hx-target; if any, will add appropriate links.
 		$htmxIncludeSelector = "",  //set a HTMX hx-include; useful for grabbing form input to submit later.
-		$htmxGenerateTRIDField = "" //set a field that will be included to generate a TR ID per row
+		$htmxGenerateTRIDField = "",//set a field that will be included to generate a TR ID per row
+        $tasksToShowArray = []      //pass an array of tasks that are allowed to be shown.  all other tasks are filtered out
 	)
 	{
 		//for debugging help --v
@@ -89,6 +108,7 @@ class zPTA
 		self::$htmxTargetSelector = $htmxTargetSelector;
 		self::$htmxIncludeSelector = $htmxIncludeSelector;
 		self::$htmxGenerateTRIDField = $htmxGenerateTRIDField;
+        self::$tasksToShowArray = $tasksToShowArray;
 		
 		//just use it now.
 		$defaultOrderBy = zarr::toArray($defaultOrderBy);
@@ -132,13 +152,26 @@ class zPTA
 			$x = explode(",", $selectFields); $shortSelectField = trim($x[0]);
 			$SQLshort = str_replace(" " . $selectFields . " ", " " . $shortSelectField . " ", $SQL);
 			self::$rowsTotal = count(zdb::getArray($SQLshort));
-			
 			$data = zdb::getArray($SQL . $orderSQL . " LIMIT " . self::$offset . "," . $rowsPerPage);
 		}
 		else
 		{
 			//unpaginated
 			$data = zdb::getArray($SQL . $orderSQL);
+
+
+            // if $tasksToShowArray is set, use it to filter out tasks that you dont want to show
+            if(count(self::$tasksToShowArray)>0)
+            {
+                foreach ($data as $k=>$v)
+                {
+                    if(!in_array($v['ID'],$tasksToShowArray))
+                    {
+                        unset($data[$k]);
+                    }
+                }
+            }
+
 			self::$rowsTotal = count($data);
 		}
 		
@@ -159,8 +192,8 @@ class zPTA
 		//no data? no show.
 		if(zs::isBlank(self::$rows)) { echo ("No " . ucfirst(self::$name) . " found.<br>"); return; }
 		
-		//table
-		if(self::$degrade) //auto-generate grid-widths for degraded fields
+		//auto-generate grid-widths for degraded fields
+		if(self::$degrade)
 		{
 			$dWidths = "";
 			foreach(self::$showFields as $k => $v)
@@ -175,7 +208,7 @@ class zPTA
 		echo "\n" . '<table class="zlt_table ' . self::$extraWrapperClasses . '" id="' . self::$name . '">' . "\n";
         echo '<tbody class="test" hx-target="closest tr" hx-swap="outerHTML">';
 		//echo "<tbody>"; //works without?
-        echo '<tr class="zl_stickyT">';
+        echo '<tr class="zl_stickyT0">';
 		
 		//htmx mode?
 		if(self::$htmxTargetSelector != "")
@@ -260,9 +293,9 @@ class zPTA
 		zui::bufStart();
 		if(self::$degrade) { ?><table class="<?=self::$extraWrapperClasses?> zPTA_paginationT"><?php } //end table and put pagination on a different row.
 		?>
-	    <tr><th colspan="100%" class="zPTA_pagination"><div class="<?=self::$extraWrapperClasses?>"><?php
+	    <tr><th colspan="100%" class="zPTA_pagination"><?php
 	    if(self::$degrade) { ?><div class="zl_left"><?php }
-        /// bypass PREV link if currentPage is 0...
+        /// bypass PREV link if currentPage is 0..
         if($offset != 0)
         {
             $prevPage = $offset - self::$rowsPerPage;
@@ -300,7 +333,6 @@ class zPTA
 		if(self::$degrade) { ?></div><?php }
         ?>
 	        <div class="zl_right"> &nbsp; <?=self::$rowsTotal?> <?=ucfirst(self::$name)?></div>
-	    </div>
 	    </th></tr>
 	    </table>
 	    <?php
