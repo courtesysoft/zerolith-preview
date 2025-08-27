@@ -65,4 +65,4 @@ Zerolith wants to eventually provide a complete toolkit one day to help create a
 ## Outro
 
 We hope you enjoy this early taste of Zerolith and look forward to your feedback.
-Please see documents in [The docs folder](/zerolith/zl_internal/docs) for further instruction!
+Please see documents in [The docs folder](/zerolith/zpanel/docs) for further instruction!
